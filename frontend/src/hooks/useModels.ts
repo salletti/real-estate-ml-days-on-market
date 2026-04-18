@@ -6,15 +6,15 @@
 // démarre tout seul dès que le composant apparaît à l'écran.
 // =============================================================================
 
-import { useState, useEffect } from "react";
-import { fetchModels } from "../api/endpoints";
-import type { ModelInfo, ApiStatus } from "../types";
+import { useState, useEffect } from 'react';
+import { fetchModels } from '../api/endpoints';
+import type { ModelInfo, ApiStatus } from '../types';
 
 export function useModels() {
   // Trois états indépendants : les données, le statut, l'erreur
   // On part en "loading" directement car on sait qu'on va charger tout de suite
   const [models, setModels] = useState<ModelInfo[]>([]);
-  const [status, setStatus] = useState<ApiStatus>("loading");
+  const [status, setStatus] = useState<ApiStatus>('loading');
   const [error, setError] = useState<string | null>(null);
 
   // ---------------------------------------------------------------------------
@@ -29,11 +29,11 @@ export function useModels() {
     fetchModels()
       .then((data) => {
         setModels(data);
-        setStatus("success");
+        setStatus('success');
       })
       .catch((err) => {
-        setError(err instanceof Error ? err.message : "Erreur inconnue");
-        setStatus("error");
+        setError(err instanceof Error ? err.message : 'Erreur inconnue');
+        setStatus('error');
       });
   }, []); // [] = dépendances vides = montage uniquement
 

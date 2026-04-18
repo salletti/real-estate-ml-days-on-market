@@ -16,7 +16,8 @@ Construite avec **FastAPI** + **scikit-learn** + **XGBoost**.
 7. [L'API FastAPI](#lapi-fastapi)
 8. [Structure du projet](#structure-du-projet)
 9. [Lancer le projet](#lancer-le-projet)
-10. [Les endpoints](#les-endpoints)
+10. [Qualité de code](#qualité-de-code)
+11. [Les endpoints](#les-endpoints)
 
 ---
 
@@ -546,6 +547,51 @@ python -m scripts.train_models
 # Lancer l'API
 uvicorn app.main:app --reload
 ```
+
+---
+
+## Qualité de code
+
+### Outils
+
+| Outil | Rôle | Config |
+|---|---|---|
+| **Ruff** | Linter + formatter (remplace flake8, black, isort en un seul outil) | `pyproject.toml` |
+| **mypy** | Vérification statique des types Python | `pyproject.toml` |
+
+### Lancer les checks (via Docker)
+
+```bash
+# Lint — détecte les erreurs de style, imports mal triés, bugs potentiels
+docker compose exec backend ruff check app/
+
+# Vérifier le formatage sans modifier les fichiers
+docker compose exec backend ruff format --check app/
+
+# Appliquer le formatage automatiquement
+docker compose exec backend ruff format app/
+
+# Corriger les erreurs auto-fixables (imports, annotations dépréciées...)
+docker compose exec backend ruff check app/ --fix
+
+# Type checking statique
+docker compose exec backend mypy app/
+```
+
+### Règles actives (Ruff)
+
+Configurées dans `pyproject.toml` via `select` :
+
+| Code | Catégorie | Exemple détecté |
+|---|---|---|
+| `E` / `F` | Erreurs pycodestyle / pyflakes | variable inutilisée, import manquant |
+| `I` | isort | imports mal triés ou mal groupés |
+| `UP` | pyupgrade | `Optional[str]` → `str \| None` |
+| `B` | flake8-bugbear | patterns potentiellement dangereux |
+
+### Git hook automatique
+
+Un hook `pre-commit` est installé dans `.git/hooks/pre-commit`. Il exécute automatiquement Ruff (lint + format) et mypy avant chaque `git commit`. Si un check échoue, le commit est bloqué jusqu'à correction.
 
 ---
 

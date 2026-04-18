@@ -14,7 +14,6 @@ Pourquoi ce fichier existe :
   divergence entre entraînement et inférence.
 """
 
-
 # ----------------------------------------------------------------------
 # Features numériques continues
 # ----------------------------------------------------------------------
@@ -100,10 +99,7 @@ BINARY_FEATURES = ["balcony", "terrace", "parking", "furnished"]
 # Le [FEATURE_COLUMNS] à la fin force pandas à réordonner les colonnes
 # dans cet ordre exact — peu importe l'ordre dans lequel l'API les reçoit.
 FEATURE_COLUMNS = (
-    NUMERIC_FEATURES
-    + ORDINAL_FEATURES
-    + CATEGORICAL_FEATURES
-    + BINARY_FEATURES
+    NUMERIC_FEATURES + ORDINAL_FEATURES + CATEGORICAL_FEATURES + BINARY_FEATURES
 )
 
 
@@ -119,5 +115,5 @@ TARGET = "days_on_market"
 # Utilisées dans les schemas Pydantic (validation API) et dans le frontend
 # pour peupler les menus déroulants.
 PROPERTY_TYPES = ["apartment", "house", "studio", "penthouse", "loft"]
-ENERGY_RATINGS = ORDINAL_ENERGY_CATEGORIES   # ["A", "B", "C", "D", "E", "F", "G"]
-CONDITIONS = ORDINAL_CONDITION_CATEGORIES    # ["new", "good", "fair", "poor"]
+ENERGY_RATINGS = ORDINAL_ENERGY_CATEGORIES  # ["A", "B", "C", "D", "E", "F", "G"]
+CONDITIONS = ORDINAL_CONDITION_CATEGORIES  # ["new", "good", "fair", "poor"]

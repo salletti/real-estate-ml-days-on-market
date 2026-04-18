@@ -36,6 +36,50 @@ L'interface est disponible sur **`http://localhost:5173`**.
 
 ---
 
+## Qualité de code
+
+### Outils
+
+| Outil | Rôle | Config |
+|---|---|---|
+| **ESLint** | Linter TypeScript/React (règles `@typescript-eslint` + `react-hooks`) | `eslint.config.js` |
+| **Prettier** | Formatter automatique (quotes, indentation, virgules...) | `.prettierrc` |
+
+### Lancer les checks (via Docker)
+
+Les checks s'exécutent dans un service Docker dédié `frontend-lint` (image `node:20-alpine`) qui ne démarre **pas** avec `docker compose up` — uniquement via `--profile lint`.
+
+```bash
+# Lint — détecte les erreurs TypeScript/React
+docker compose --profile lint run --rm frontend-lint npm run lint
+
+# Vérifier le formatage sans modifier les fichiers
+docker compose --profile lint run --rm frontend-lint npm run format:check
+
+# Appliquer le formatage automatiquement
+docker compose --profile lint run --rm frontend-lint npm run format
+
+# Corriger les erreurs ESLint auto-fixables
+docker compose --profile lint run --rm frontend-lint npm run lint:fix
+```
+
+> **Premier lancement :** le service installe automatiquement `node_modules` dans un volume Docker nommé (`frontend_node_modules`). Les lancements suivants réutilisent ce cache — l'installation ne se refait que si `node_modules` est vide.
+
+### Scripts disponibles (`package.json`)
+
+| Script | Commande | Description |
+|---|---|---|
+| `lint` | `eslint src` | Vérifie tout le dossier `src/` |
+| `lint:fix` | `eslint src --fix` | Corrige les erreurs auto-fixables |
+| `format` | `prettier --write src` | Reformatte tous les fichiers |
+| `format:check` | `prettier --check src` | Vérifie sans modifier |
+
+### Git hook automatique
+
+Le hook `.git/hooks/pre-commit` exécute ESLint et Prettier avant chaque `git commit`. Si un check échoue, le commit est bloqué.
+
+---
+
 ## Utiliser le formulaire
 
 ### Vue d'ensemble

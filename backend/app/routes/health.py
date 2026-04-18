@@ -9,7 +9,10 @@ Utilisé par :
   - Les outils de monitoring (UptimeRobot, etc.)
 """
 
+from typing import Any
+
 from fastapi import APIRouter, Depends
+
 from app.dependencies import get_model_service
 from app.services.model_service import ModelService
 
@@ -17,7 +20,7 @@ router = APIRouter()
 
 
 @router.get("/health")
-def health(service: ModelService = Depends(get_model_service)):
+def health(service: ModelService = Depends(get_model_service)) -> dict[str, Any]:
     """
     Retourne le statut de l'API et le modèle actif.
 
@@ -26,6 +29,6 @@ def health(service: ModelService = Depends(get_model_service)):
     """
     return {
         "status": "ok",
-        "active_model": service.get_active_model_name(),
+        "active_model": service.get_default_model(),
         "models_loaded": len(service.list_models()),
     }

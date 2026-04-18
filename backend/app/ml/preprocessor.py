@@ -20,18 +20,18 @@ Pourquoi un seul objet ColumnTransformer :
 
 from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import (
-    StandardScaler,
-    OrdinalEncoder,
     OneHotEncoder,
+    OrdinalEncoder,
+    StandardScaler,
 )
 
 from app.ml.constants import (
-    NUMERIC_FEATURES,
-    ORDINAL_FEATURES,
-    ORDINAL_ENERGY_CATEGORIES,
-    ORDINAL_CONDITION_CATEGORIES,
-    CATEGORICAL_FEATURES,
     BINARY_FEATURES,
+    CATEGORICAL_FEATURES,
+    NUMERIC_FEATURES,
+    ORDINAL_CONDITION_CATEGORIES,
+    ORDINAL_ENERGY_CATEGORIES,
+    ORDINAL_FEATURES,
 )
 
 
@@ -79,8 +79,8 @@ def build_preprocessor() -> ColumnTransformer:
     #   reçoit -1 au lieu de crasher. Cas rare mais défensif.
     ordinal_transformer = OrdinalEncoder(
         categories=[
-            ORDINAL_ENERGY_CATEGORIES,    # ["A", "B", "C", "D", "E", "F", "G"]
-            ORDINAL_CONDITION_CATEGORIES, # ["new", "good", "fair", "poor"]
+            ORDINAL_ENERGY_CATEGORIES,  # ["A", "B", "C", "D", "E", "F", "G"]
+            ORDINAL_CONDITION_CATEGORIES,  # ["new", "good", "fair", "poor"]
         ],
         handle_unknown="use_encoded_value",
         unknown_value=-1,
@@ -130,10 +130,10 @@ def build_preprocessor() -> ColumnTransformer:
     #   Évite que des colonnes inattendues contaminent le modèle.
     return ColumnTransformer(
         transformers=[
-            ("num", numeric_transformer,     NUMERIC_FEATURES),
-            ("ord", ordinal_transformer,     ORDINAL_FEATURES),
+            ("num", numeric_transformer, NUMERIC_FEATURES),
+            ("ord", ordinal_transformer, ORDINAL_FEATURES),
             ("cat", categorical_transformer, CATEGORICAL_FEATURES),
-            ("bin", "passthrough",           BINARY_FEATURES),
+            ("bin", "passthrough", BINARY_FEATURES),
         ],
         remainder="drop",
     )

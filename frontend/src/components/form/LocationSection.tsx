@@ -7,8 +7,8 @@
 // `errors` du parent, il n'a aucun état local.
 // =============================================================================
 
-import type { UseFormRegister, FieldErrors } from "react-hook-form";
-import type { PredictionRequest } from "../../types";
+import type { UseFormRegister, FieldErrors } from 'react-hook-form';
+import type { PredictionRequest } from '../../types';
 
 interface Props {
   register: UseFormRegister<PredictionRequest>;
@@ -43,17 +43,16 @@ export function LocationSection({ register, errors }: Props) {
       </h2>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-
         {/* --- city --- */}
         <Field label="Ville" error={errors.city?.message}>
           <input
             type="text"
             // Pas de valueAsNumber ici : city est une string, pas un nombre.
             // On valide juste que le champ n'est pas vide et a une longueur raisonnable.
-            {...register("city", {
-              required: "La ville est obligatoire",
-              minLength: { value: 2, message: "Minimum 2 caractères" },
-              maxLength: { value: 100, message: "Maximum 100 caractères" },
+            {...register('city', {
+              required: 'La ville est obligatoire',
+              minLength: { value: 2, message: 'Minimum 2 caractères' },
+              maxLength: { value: 100, message: 'Maximum 100 caractères' },
             })}
             placeholder="Paris"
             defaultValue="Paris"
@@ -65,10 +64,10 @@ export function LocationSection({ register, errors }: Props) {
         <Field label="Quartier" error={errors.neighborhood?.message}>
           <input
             type="text"
-            {...register("neighborhood", {
-              required: "Le quartier est obligatoire",
-              minLength: { value: 2, message: "Minimum 2 caractères" },
-              maxLength: { value: 100, message: "Maximum 100 caractères" },
+            {...register('neighborhood', {
+              required: 'Le quartier est obligatoire',
+              minLength: { value: 2, message: 'Minimum 2 caractères' },
+              maxLength: { value: 100, message: 'Maximum 100 caractères' },
             })}
             placeholder="Montmartre"
             defaultValue="Montmartre"
@@ -81,12 +80,12 @@ export function LocationSection({ register, errors }: Props) {
         <Field label="Code postal" error={errors.zipcode?.message}>
           <input
             type="text"
-            {...register("zipcode", {
-              required: "Le code postal est obligatoire",
+            {...register('zipcode', {
+              required: 'Le code postal est obligatoire',
               // pattern vérifie le format avec une regex : exactement 5 chiffres
               pattern: {
                 value: /^\d{5}$/,
-                message: "Format invalide (ex: 75018)",
+                message: 'Format invalide (ex: 75018)',
               },
             })}
             placeholder="75018"
@@ -94,7 +93,6 @@ export function LocationSection({ register, errors }: Props) {
             className="input"
           />
         </Field>
-
       </div>
     </div>
   );

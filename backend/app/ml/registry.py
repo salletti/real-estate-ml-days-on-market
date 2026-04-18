@@ -25,8 +25,9 @@ Structure des fichiers générés (dans backend/models/) :
 
 import json
 import logging
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
+from typing import Any
 
 import joblib
 from sklearn.pipeline import Pipeline
@@ -47,7 +48,7 @@ class ModelRegistry:
     def save(
         name: str,
         pipeline: Pipeline,
-        metrics: dict,
+        metrics: dict[str, Any],
         model_dir: str | Path,
     ) -> None:
         """
@@ -82,8 +83,8 @@ class ModelRegistry:
         metadata = {
             "name": name,
             "algorithm": name,  # ex: "random_forest"
-            "trained_at": datetime.now(timezone.utc).isoformat(),
-            **metrics,          # mae, rmse, r2, residual_std
+            "trained_at": datetime.now(UTC).isoformat(),
+            **metrics,  # mae, rmse, r2, residual_std
         }
         json_path = model_dir / f"{name}.json"
         with open(json_path, "w") as f:
@@ -91,7 +92,7 @@ class ModelRegistry:
         logger.info(f"Metadata saved → {json_path}")
 
     @staticmethod
-    def load_all(model_dir: str | Path) -> dict:
+    def load_all(model_dir: str | Path) -> dict[str, dict[str, Any]]:
         """
         Charge tous les modèles disponibles depuis le dossier models/.
 
@@ -115,14 +116,16 @@ class ModelRegistry:
             L'API ne crashe pas si un seul modèle est défaillant.
         """
         model_dir = Path(model_dir)
-        registry = {}
+        registry: dict[str, dict[str, Any]] = {}
 
         # On itère sur tous les fichiers .json du dossier
         # (chaque .json correspond à un modèle entraîné)
         json_files = list(model_dir.glob("*.json"))
 
         if not json_files:
-            logger.warning(f"No models found in {model_dir}. Run train_models.py first.")
+            logger.warning(
+                f"No models found in {model_dir}. Run train_models.py first."
+            )
             return registry
 
         for json_path in sorted(json_files):
@@ -144,7 +147,9 @@ class ModelRegistry:
                     "pipeline": pipeline,
                     "metadata": metadata,
                 }
-                logger.info(f"Loaded model '{name}' (MAE={metadata.get('mae', '?'):.2f})")
+                logger.info(
+                    f"Loaded model '{name}' (MAE={metadata.get('mae', '?'):.2f})"
+                )
 
             except Exception as e:
                 # On ne fait pas crasher tout le serveur pour un seul modèle corrompu
@@ -154,7 +159,7 @@ class ModelRegistry:
         return registry
 
     @staticmethod
-    def get_best_model(registry: dict) -> str | None:
+    def get_best_model(registry: dict[str, dict[str, Any]]) -> str | None:
         """
         Retourne le nom du modèle avec la MAE la plus basse.
 
@@ -172,4 +177,4 @@ class ModelRegistry:
             key=lambda name: registry[name]["metadata"].get("mae", float("inf")),
         )
         logger.info(f"Best model by MAE: '{best}'")
-        return best
+        return str(best)

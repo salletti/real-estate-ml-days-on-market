@@ -14,23 +14,23 @@
 
 export interface PredictionRequest {
   // --- Numériques ---
-  surface: number;          // Surface en m²
-  rooms: number;            // Nombre de pièces
-  bathrooms: number;        // Nombre de salles de bain
-  age: number;              // Âge du bien en années
-  listing_price: number;    // Prix demandé en euros
-  market_price_m2: number;  // Prix moyen du marché au m² dans la zone
-  floor: number;            // Étage (0 = rez-de-chaussée)
+  surface: number; // Surface en m²
+  rooms: number; // Nombre de pièces
+  bathrooms: number; // Nombre de salles de bain
+  age: number; // Âge du bien en années
+  listing_price: number; // Prix demandé en euros
+  market_price_m2: number; // Prix moyen du marché au m² dans la zone
+  floor: number; // Étage (0 = rez-de-chaussée)
 
   // --- Ordinaux (valeurs fixes imposées par le backend) ---
-  energy_rating: "A" | "B" | "C" | "D" | "E" | "F" | "G"; // Diagnostic énergétique
-  condition: "new" | "good" | "fair" | "poor";             // État général du bien
+  energy_rating: 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G'; // Diagnostic énergétique
+  condition: 'new' | 'good' | 'fair' | 'poor'; // État général du bien
 
   // --- Catégoriels ---
-  property_type: "apartment" | "house" | "studio" | "penthouse" | "loft";
-  city: string;         // Ex: "Paris", "Lyon"
+  property_type: 'apartment' | 'house' | 'studio' | 'penthouse' | 'loft';
+  city: string; // Ex: "Paris", "Lyon"
   neighborhood: string; // Ex: "Montmartre", "Croix-Rousse"
-  zipcode: string;      // Ex: "75018"
+  zipcode: string; // Ex: "75018"
 
   // --- Binaires ---
   // Le backend Pydantic attend des booléens natifs (bool Python = true/false JSON)
@@ -46,11 +46,12 @@ export interface PredictionRequest {
 // Correspond à PredictionResponse dans backend/app/schemas/prediction.py
 
 export interface PredictionResponse {
-  model_used: string;      // Nom du modèle : "xgboost", "random_forest", etc.
-  predicted_days: number;  // Prédiction centrale (jours avant vente)
-  lower_bound: number;     // Borne basse de l'intervalle de confiance à 95%
-  upper_bound: number;     // Borne haute de l'intervalle de confiance à 95%
-  model_metrics: {         // Métriques du modèle
+  model_used: string; // Nom du modèle : "xgboost", "random_forest", etc.
+  predicted_days: number; // Prédiction centrale (jours avant vente)
+  lower_bound: number; // Borne basse de l'intervalle de confiance à 95%
+  upper_bound: number; // Borne haute de l'intervalle de confiance à 95%
+  model_metrics: {
+    // Métriques du modèle
     mae: number;
     rmse: number;
     r2: number;
@@ -72,10 +73,10 @@ export interface AllPredictionsResponse {
 // Correspond à ModelInfo dans backend/app/schemas/model_info.py
 
 export interface ModelInfo {
-  name: string;    // Identifiant : "xgboost", "random_forest", "linear_regression"
-  mae: number;     // Mean Absolute Error — erreur moyenne en jours
-  rmse: number;    // Root Mean Squared Error — erreur quadratique moyenne
-  r2: number;      // R² — coefficient de détermination (0 à 1, plus c'est haut mieux c'est)
+  name: string; // Identifiant : "xgboost", "random_forest", "linear_regression"
+  mae: number; // Mean Absolute Error — erreur moyenne en jours
+  rmse: number; // Root Mean Squared Error — erreur quadratique moyenne
+  r2: number; // R² — coefficient de détermination (0 à 1, plus c'est haut mieux c'est)
 }
 
 // -----------------------------------------------------------------------------
@@ -85,7 +86,7 @@ export interface ModelInfo {
 // des composants et des hooks React.
 
 // Représente l'état générique d'un appel API asynchrone
-export type ApiStatus = "idle" | "loading" | "success" | "error";
+export type ApiStatus = 'idle' | 'loading' | 'success' | 'error';
 // - idle    : l'utilisateur n'a pas encore soumis
 // - loading : la requête est en cours
 // - success : la réponse est arrivée sans erreur
@@ -95,5 +96,5 @@ export type ApiStatus = "idle" | "loading" | "success" | "error";
 export interface PredictionState {
   status: ApiStatus;
   data: AllPredictionsResponse | null; // null tant qu'on n'a pas de résultat
-  error: string | null;                // message d'erreur lisible
+  error: string | null; // message d'erreur lisible
 }

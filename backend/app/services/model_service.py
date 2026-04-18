@@ -17,17 +17,19 @@ Responsabilités :
 """
 
 import logging
+from typing import Any
+
 from fastapi import HTTPException
-from app.ml.registry import ModelRegistry
+
 from app.ml import predictor
+from app.ml.registry import ModelRegistry
 
 logger = logging.getLogger(__name__)
 
 
 class ModelService:
-
-    def __init__(self):
-        self._registry: dict = {}
+    def __init__(self) -> None:
+        self._registry: dict[str, dict[str, Any]] = {}
         self._best_model: str | None = None  # calculé une fois au chargement
 
     def load(self, model_dir: str, default_model: str = "xgboost") -> None:
@@ -39,7 +41,9 @@ class ModelService:
         self._registry = ModelRegistry.load_all(model_dir)
 
         if not self._registry:
-            logger.warning("No models loaded. Run 'python -m scripts.train_models' first.")
+            logger.warning(
+                "No models loaded. Run 'python -m scripts.train_models' first."
+            )
             return
 
         # Le "meilleur modèle" est calculé une fois à l'initialisation.
@@ -49,13 +53,16 @@ class ModelService:
         else:
             self._best_model = ModelRegistry.get_best_model(self._registry)
 
-        logger.info(f"Default model: '{self._best_model}' | Available: {list(self._registry.keys())}")
+        available = list(self._registry.keys())
+        logger.info(f"Default model: '{self._best_model}' | Available: {available}")
 
     # ------------------------------------------------------------------
     # Prédiction stateless
     # ------------------------------------------------------------------
 
-    def predict(self, features: dict, model_name: str | None = None) -> dict:
+    def predict(
+        self, features: dict[str, Any], model_name: str | None = None
+    ) -> dict[str, Any]:
         """
         Prédit avec le modèle spécifié, ou le meilleur par défaut.
 
@@ -75,7 +82,7 @@ class ModelService:
         if name not in self._registry:
             raise HTTPException(
                 status_code=404,
-                detail=f"Model '{name}' not found. Available: {list(self._registry.keys())}",
+                detail=f"Model '{name}' not found. Available: {list(self._registry.keys())}",  # noqa: E501
             )
 
         entry = self._registry[name]
@@ -85,7 +92,7 @@ class ModelService:
             metadata=entry["metadata"],
         )
 
-    def predict_all(self, features: dict) -> list[dict]:
+    def predict_all(self, features: dict[str, Any]) -> list[dict[str, Any]]:
         """
         Prédit avec TOUS les modèles et retourne les résultats côte à côte.
         Permet à l'utilisateur de comparer les prédictions des 3 modèles.
@@ -105,7 +112,7 @@ class ModelService:
     # Informations sur les modèles
     # ------------------------------------------------------------------
 
-    def list_models(self) -> list[dict]:
+    def list_models(self) -> list[dict[str, Any]]:
         """Retourne les métadonnées de tous les modèles disponibles."""
         return [entry["metadata"] for entry in self._registry.values()]
 
@@ -123,5 +130,5 @@ class ModelService:
         if not self._registry:
             raise HTTPException(
                 status_code=503,
-                detail="No ML models loaded. Run 'python -m scripts.train_models' first.",
+                detail="No ML models loaded. Run 'python -m scripts.train_models' first.",  # noqa: E501
             )

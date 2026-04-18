@@ -10,8 +10,9 @@ Responsabilités :
   - Gérer le cycle de vie (démarrage / arrêt) via lifespan
 """
 
-from contextlib import asynccontextmanager
 import logging
+from collections.abc import AsyncGenerator
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -28,7 +29,7 @@ logger = logging.getLogger(__name__)
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     """
     Gère le cycle de vie de l'application.
 
@@ -84,8 +85,8 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins_list,
     allow_credentials=True,
-    allow_methods=["*"],   # GET, POST, PUT, DELETE...
-    allow_headers=["*"],   # Content-Type, Authorization...
+    allow_methods=["*"],  # GET, POST, PUT, DELETE...
+    allow_headers=["*"],  # Content-Type, Authorization...
 )
 
 # ------------------------------------------------------------------
@@ -94,7 +95,7 @@ app.add_middleware(
 # Import ici (et non en haut du fichier) pour éviter les imports
 # circulaires : les routes importent les dépendances, qui importent
 # le service, etc.
-from app.routes import health, predict, models  # noqa: E402
+from app.routes import health, models, predict  # noqa: E402
 
 app.include_router(health.router)
 app.include_router(predict.router, prefix="/api/v1")

@@ -5,7 +5,7 @@
 // On le configure une fois ici, et on l'importe partout ailleurs.
 // =============================================================================
 
-import axios from "axios";
+import axios from 'axios';
 
 // -----------------------------------------------------------------------------
 // BASE URL — où se trouve le backend ?
@@ -25,7 +25,7 @@ import axios from "axios";
 // dans Create React App). Toute variable doit commencer par VITE_ pour être
 // exposée au navigateur.
 // -----------------------------------------------------------------------------
-const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "";
+const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '';
 
 // -----------------------------------------------------------------------------
 // INSTANCE AXIOS
@@ -43,7 +43,7 @@ const apiClient = axios.create({
 
   headers: {
     // On indique au backend qu'on envoie et qu'on attend du JSON
-    "Content-Type": "application/json",
+    'Content-Type': 'application/json',
   },
 });
 

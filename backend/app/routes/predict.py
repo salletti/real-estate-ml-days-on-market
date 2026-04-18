@@ -12,15 +12,15 @@ Routes :
   POST /api/v1/predict/all             → prédictions de tous les modèles
 """
 
-from typing import Optional
 from fastapi import APIRouter, Depends, Query
+
 from app.dependencies import get_model_service
-from app.services.model_service import ModelService
 from app.schemas.prediction import (
+    AllModelsPredictionResponse,
     PredictionRequest,
     PredictionResponse,
-    AllModelsPredictionResponse,
 )
+from app.services.model_service import ModelService
 
 router = APIRouter()
 
@@ -28,13 +28,13 @@ router = APIRouter()
 @router.post("/predict", response_model=PredictionResponse)
 def predict(
     request: PredictionRequest,
-    model: Optional[str] = Query(
+    model: str | None = Query(
         default=None,
-        description="Nom du modèle à utiliser. Si absent, utilise le meilleur modèle (XGBoost).",
+        description="Nom du modèle à utiliser. Si absent, utilise le meilleur modèle.",
         examples=["xgboost", "random_forest", "linear_regression"],
     ),
     service: ModelService = Depends(get_model_service),
-):
+) -> PredictionResponse:
     """
     Prédit le temps de vente d'un bien immobilier.
 
@@ -51,7 +51,7 @@ def predict(
 def predict_all(
     request: PredictionRequest,
     service: ModelService = Depends(get_model_service),
-):
+) -> AllModelsPredictionResponse:
     """
     Prédit avec les 3 modèles simultanément.
 

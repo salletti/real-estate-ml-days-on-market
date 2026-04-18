@@ -2,13 +2,13 @@
 // API ENDPOINTS — Fonctions d'appel HTTP
 // =============================================================================
 
-import apiClient from "./client";
+import apiClient from './client';
 import type {
   PredictionRequest,
   PredictionResponse,
   AllPredictionsResponse,
   ModelInfo,
-} from "../types";
+} from '../types';
 
 // -----------------------------------------------------------------------------
 // POST /api/v1/predict?model=xgboost
@@ -22,7 +22,7 @@ export async function fetchPrediction(
 ): Promise<PredictionResponse> {
   const params = model ? { model } : {};
 
-  const response = await apiClient.post("/api/v1/predict", data, { params });
+  const response = await apiClient.post('/api/v1/predict', data, { params });
   return response.data as PredictionResponse;
 }
 
@@ -34,7 +34,7 @@ export async function fetchPrediction(
 export async function fetchAllPredictions(
   data: PredictionRequest
 ): Promise<AllPredictionsResponse> {
-  const response = await apiClient.post("/api/v1/predict/all", data);
+  const response = await apiClient.post('/api/v1/predict/all', data);
   return response.data as AllPredictionsResponse;
 }
 
@@ -44,6 +44,6 @@ export async function fetchAllPredictions(
 // Liste des 3 modèles avec leurs métriques (MAE, RMSE, R²).
 // -----------------------------------------------------------------------------
 export async function fetchModels(): Promise<ModelInfo[]> {
-  const response = await apiClient.get("/api/v1/models");
+  const response = await apiClient.get('/api/v1/models');
   return response.data as ModelInfo[];
 }

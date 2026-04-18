@@ -23,6 +23,8 @@ Stratégie par modèle :
   - Linear Reg.    : residual_std stocké dans les métadonnées à l'entraînement
 """
 
+from typing import Any
+
 import numpy as np
 import pandas as pd
 from sklearn.pipeline import Pipeline
@@ -31,10 +33,10 @@ from app.ml.constants import FEATURE_COLUMNS
 
 
 def predict(
-    features: dict,
+    features: dict[str, Any],
     pipeline: Pipeline,
-    metadata: dict,
-) -> dict:
+    metadata: dict[str, Any],
+) -> dict[str, Any]:
     """
     Effectue une prédiction pour un bien immobilier.
 
@@ -114,9 +116,9 @@ def predict(
         "upper_bound": upper,
         "model_used": metadata.get("name", "unknown"),
         "model_metrics": {
-            "mae":  metadata.get("mae"),
+            "mae": metadata.get("mae"),
             "rmse": metadata.get("rmse"),
-            "r2":   metadata.get("r2"),
+            "r2": metadata.get("r2"),
         },
     }
 
@@ -124,7 +126,7 @@ def predict(
 def _compute_confidence_interval(
     df: pd.DataFrame,
     pipeline: Pipeline,
-    metadata: dict,
+    metadata: dict[str, Any],
     predicted_days: int,
 ) -> tuple[int, int]:
     """
@@ -182,10 +184,9 @@ def _rf_prediction_std(df: pd.DataFrame, pipeline: Pipeline) -> float:
 
         # Collecte des prédictions de chaque arbre
         # estimators_ = liste des DecisionTreeRegressor individuels
-        tree_predictions = np.array([
-            tree.predict(X_transformed)[0]
-            for tree in rf_model.estimators_
-        ])
+        tree_predictions = np.array(
+            [tree.predict(X_transformed)[0] for tree in rf_model.estimators_]
+        )
 
         return float(np.std(tree_predictions))
 

@@ -30,11 +30,12 @@ Pourquoi un Pipeline sklearn et pas des étapes séparées :
 """
 
 import logging
+from typing import Any
 
 import numpy as np
 import pandas as pd
-from sklearn.linear_model import LinearRegression
 from sklearn.ensemble import RandomForestRegressor
+from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
@@ -47,7 +48,7 @@ from app.ml.registry import ModelRegistry
 logger = logging.getLogger(__name__)
 
 
-def train_all(df: pd.DataFrame, model_dir: str = "./models") -> dict:
+def train_all(df: pd.DataFrame, model_dir: str = "./models") -> dict[str, Any]:
     """
     Entraîne les trois modèles, les évalue et les sauvegarde.
 
@@ -127,11 +128,11 @@ def train_all(df: pd.DataFrame, model_dir: str = "./models") -> dict:
             # Résultat : très précis sur les données tabulaires, souvent meilleur
             # que Random Forest au prix d'un tuning plus délicat.
             #
-            # n_estimators=300    : 300 arbres séquentiels
-            # learning_rate=0.05  : chaque arbre contribue faiblement (évite l'overfitting)
-            # max_depth=6         : profondeur max des arbres (compromis biais/variance)
-            # subsample=0.8       : chaque arbre utilise 80% des données (régularisation)
-            # colsample_bytree=0.8: chaque arbre utilise 80% des features (régularisation)
+            # n_estimators=300     : 300 arbres séquentiels
+            # learning_rate=0.05   : contribution faible par arbre (évite l'overfitting)
+            # max_depth=6          : profondeur max des arbres (biais/variance)
+            # subsample=0.8        : chaque arbre utilise 80% des données
+            # colsample_bytree=0.8 : chaque arbre utilise 80% des features
             XGBRegressor(
                 n_estimators=300,
                 learning_rate=0.05,
@@ -156,10 +157,12 @@ def train_all(df: pd.DataFrame, model_dir: str = "./models") -> dict:
         # Construction du Pipeline : preprocessor → modèle
         # Le preprocessor est reconstruit pour chaque modèle : chaque pipeline
         # a sa propre instance fittée (évite les effets de bord entre modèles).
-        pipeline = Pipeline([
-            ("preprocessor", build_preprocessor()),
-            ("model", estimator),
-        ])
+        pipeline = Pipeline(
+            [
+                ("preprocessor", build_preprocessor()),
+                ("model", estimator),
+            ]
+        )
 
         # .fit() entraîne le preprocessor ET le modèle en une seule commande
         pipeline.fit(X_train, y_train)
@@ -170,9 +173,9 @@ def train_all(df: pd.DataFrame, model_dir: str = "./models") -> dict:
         # --------------------------------------------------------------
         # Calcul des métriques sur le test set
         # --------------------------------------------------------------
-        mae  = mean_absolute_error(y_test, y_pred)
+        mae = mean_absolute_error(y_test, y_pred)
         rmse = np.sqrt(mean_squared_error(y_test, y_pred))
-        r2   = r2_score(y_test, y_pred)
+        r2 = r2_score(y_test, y_pred)
 
         # residual_std : écart-type des erreurs sur le test set.
         # Utilisé dans predictor.py pour estimer l'intervalle de confiance
@@ -181,9 +184,9 @@ def train_all(df: pd.DataFrame, model_dir: str = "./models") -> dict:
         residual_std = float(np.std(y_test.values - y_pred))
 
         metrics = {
-            "mae":          round(float(mae), 2),
-            "rmse":         round(float(rmse), 2),
-            "r2":           round(float(r2), 4),
+            "mae": round(float(mae), 2),
+            "rmse": round(float(rmse), 2),
+            "r2": round(float(r2), 4),
             "residual_std": round(residual_std, 2),
         }
 

@@ -11,15 +11,18 @@ Le choix du modèle se fait désormais via le query param de /predict.
 """
 
 from fastapi import APIRouter, Depends
+
 from app.dependencies import get_model_service
-from app.services.model_service import ModelService
 from app.schemas.model_info import ModelInfo, ModelListResponse
+from app.services.model_service import ModelService
 
 router = APIRouter()
 
 
 @router.get("/models", response_model=ModelListResponse)
-def list_models(service: ModelService = Depends(get_model_service)):
+def list_models(
+    service: ModelService = Depends(get_model_service),
+) -> ModelListResponse:
     """
     Retourne tous les modèles disponibles avec leurs métriques.
 

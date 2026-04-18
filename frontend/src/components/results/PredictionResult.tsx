@@ -7,7 +7,7 @@
 // Affiché 3 fois côte à côte dans ModelComparison (une carte par modèle).
 // =============================================================================
 
-import type { PredictionResponse } from "../../types";
+import type { PredictionResponse } from '../../types';
 
 interface Props {
   prediction: PredictionResponse;
@@ -21,9 +21,9 @@ interface Props {
 // -----------------------------------------------------------------------------
 function formatModelName(name: string): string {
   return name
-    .split("_")                          // ["random", "forest"]
+    .split('_') // ["random", "forest"]
     .map((w) => w.charAt(0).toUpperCase() + w.slice(1)) // ["Random", "Forest"]
-    .join(" ");                          // "Random Forest"
+    .join(' '); // "Random Forest"
 }
 
 // -----------------------------------------------------------------------------
@@ -31,9 +31,9 @@ function formatModelName(name: string): string {
 // Vert = vente rapide, orange = moyen, rouge = long
 // -----------------------------------------------------------------------------
 function getDaysColor(days: number): string {
-  if (days <= 30)  return "text-green-600";
-  if (days <= 60)  return "text-orange-500";
-  return "text-red-500";
+  if (days <= 30) return 'text-green-600';
+  if (days <= 60) return 'text-orange-500';
+  return 'text-red-500';
 }
 
 export function PredictionResult({ prediction, highlighted = false }: Props) {
@@ -43,17 +43,16 @@ export function PredictionResult({ prediction, highlighted = false }: Props) {
     <div
       className={`
         rounded-xl border p-5 flex flex-col gap-3 transition-shadow
-        ${highlighted
-          ? "border-blue-500 shadow-lg shadow-blue-100 bg-blue-50"
-          : "border-gray-200 bg-white shadow-sm"
+        ${
+          highlighted
+            ? 'border-blue-500 shadow-lg shadow-blue-100 bg-blue-50'
+            : 'border-gray-200 bg-white shadow-sm'
         }
       `}
     >
       {/* En-tête : nom du modèle + badge "Recommandé" si highlighted */}
       <div className="flex items-center justify-between">
-        <h3 className="font-semibold text-gray-800">
-          {formatModelName(model_used)}
-        </h3>
+        <h3 className="font-semibold text-gray-800">{formatModelName(model_used)}</h3>
         {highlighted && (
           <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-blue-600 text-white">
             Recommandé

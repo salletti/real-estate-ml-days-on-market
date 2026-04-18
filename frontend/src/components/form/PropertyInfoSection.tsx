@@ -9,8 +9,8 @@
 // un seul état centralisé en haut, les sections ne font qu'afficher des inputs.
 // =============================================================================
 
-import type { UseFormRegister, FieldErrors } from "react-hook-form";
-import type { PredictionRequest } from "../../types";
+import type { UseFormRegister, FieldErrors } from 'react-hook-form';
+import type { PredictionRequest } from '../../types';
 
 // -----------------------------------------------------------------------------
 // PROPS — ce que le composant reçoit du parent
@@ -62,17 +62,16 @@ export function PropertyInfoSection({ register, errors }: Props) {
 
       {/* Grille 2 colonnes sur écrans moyens et plus */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-
         {/* --- surface --- */}
         <Field label="Surface (m²)" error={errors.surface?.message}>
           <input
             type="number"
             // register("surface", { validation }) connecte cet input au formulaire.
             // required + min/max sont des règles de validation intégrées.
-            {...register("surface", {
-              required: "La surface est obligatoire",
-              min: { value: 9, message: "Minimum 9 m²" },
-              max: { value: 1000, message: "Maximum 1000 m²" },
+            {...register('surface', {
+              required: 'La surface est obligatoire',
+              min: { value: 9, message: 'Minimum 9 m²' },
+              max: { value: 1000, message: 'Maximum 1000 m²' },
               valueAsNumber: true, // retourne un number, pas une string
             })}
             placeholder="65"
@@ -85,10 +84,10 @@ export function PropertyInfoSection({ register, errors }: Props) {
         <Field label="Nombre de pièces" error={errors.rooms?.message}>
           <input
             type="number"
-            {...register("rooms", {
-              required: "Obligatoire",
-              min: { value: 1, message: "Minimum 1" },
-              max: { value: 20, message: "Maximum 20" },
+            {...register('rooms', {
+              required: 'Obligatoire',
+              min: { value: 1, message: 'Minimum 1' },
+              max: { value: 20, message: 'Maximum 20' },
               valueAsNumber: true,
             })}
             placeholder="3"
@@ -101,10 +100,10 @@ export function PropertyInfoSection({ register, errors }: Props) {
         <Field label="Salles de bain" error={errors.bathrooms?.message}>
           <input
             type="number"
-            {...register("bathrooms", {
-              required: "Obligatoire",
-              min: { value: 1, message: "Minimum 1" },
-              max: { value: 10, message: "Maximum 10" },
+            {...register('bathrooms', {
+              required: 'Obligatoire',
+              min: { value: 1, message: 'Minimum 1' },
+              max: { value: 10, message: 'Maximum 10' },
               valueAsNumber: true,
             })}
             placeholder="1"
@@ -117,10 +116,10 @@ export function PropertyInfoSection({ register, errors }: Props) {
         <Field label="Âge du bien (années)" error={errors.age?.message}>
           <input
             type="number"
-            {...register("age", {
-              required: "Obligatoire",
-              min: { value: 0, message: "Minimum 0" },
-              max: { value: 200, message: "Maximum 200" },
+            {...register('age', {
+              required: 'Obligatoire',
+              min: { value: 0, message: 'Minimum 0' },
+              max: { value: 200, message: 'Maximum 200' },
               valueAsNumber: true,
             })}
             placeholder="15"
@@ -133,9 +132,9 @@ export function PropertyInfoSection({ register, errors }: Props) {
         <Field label="Prix de vente (€)" error={errors.listing_price?.message}>
           <input
             type="number"
-            {...register("listing_price", {
-              required: "Obligatoire",
-              min: { value: 10000, message: "Minimum 10 000 €" },
+            {...register('listing_price', {
+              required: 'Obligatoire',
+              min: { value: 10000, message: 'Minimum 10 000 €' },
               valueAsNumber: true,
             })}
             placeholder="320000"
@@ -148,9 +147,9 @@ export function PropertyInfoSection({ register, errors }: Props) {
         <Field label="Prix marché au m² (€)" error={errors.market_price_m2?.message}>
           <input
             type="number"
-            {...register("market_price_m2", {
-              required: "Obligatoire",
-              min: { value: 500, message: "Minimum 500 €/m²" },
+            {...register('market_price_m2', {
+              required: 'Obligatoire',
+              min: { value: 500, message: 'Minimum 500 €/m²' },
               valueAsNumber: true,
             })}
             placeholder="4800"
@@ -163,10 +162,10 @@ export function PropertyInfoSection({ register, errors }: Props) {
         <Field label="Étage (0 = RDC)" error={errors.floor?.message}>
           <input
             type="number"
-            {...register("floor", {
-              required: "Obligatoire",
-              min: { value: 0, message: "Minimum 0" },
-              max: { value: 50, message: "Maximum 50" },
+            {...register('floor', {
+              required: 'Obligatoire',
+              min: { value: 0, message: 'Minimum 0' },
+              max: { value: 50, message: 'Maximum 50' },
               valueAsNumber: true,
             })}
             placeholder="2"
@@ -178,7 +177,7 @@ export function PropertyInfoSection({ register, errors }: Props) {
         {/* --- property_type --- */}
         <Field label="Type de bien" error={errors.property_type?.message}>
           <select
-            {...register("property_type", { required: "Obligatoire" })}
+            {...register('property_type', { required: 'Obligatoire' })}
             defaultValue="apartment"
             className="input"
           >
@@ -193,13 +192,15 @@ export function PropertyInfoSection({ register, errors }: Props) {
         {/* --- energy_rating --- */}
         <Field label="Diagnostic énergétique" error={errors.energy_rating?.message}>
           <select
-            {...register("energy_rating", { required: "Obligatoire" })}
+            {...register('energy_rating', { required: 'Obligatoire' })}
             defaultValue="C"
             className="input"
           >
             {/* On génère les options A→G dynamiquement */}
-            {["A", "B", "C", "D", "E", "F", "G"].map((r) => (
-              <option key={r} value={r}>{r}</option>
+            {['A', 'B', 'C', 'D', 'E', 'F', 'G'].map((r) => (
+              <option key={r} value={r}>
+                {r}
+              </option>
             ))}
           </select>
         </Field>
@@ -207,7 +208,7 @@ export function PropertyInfoSection({ register, errors }: Props) {
         {/* --- condition --- */}
         <Field label="État général" error={errors.condition?.message}>
           <select
-            {...register("condition", { required: "Obligatoire" })}
+            {...register('condition', { required: 'Obligatoire' })}
             defaultValue="good"
             className="input"
           >
@@ -217,7 +218,6 @@ export function PropertyInfoSection({ register, errors }: Props) {
             <option value="poor">Mauvais état</option>
           </select>
         </Field>
-
       </div>
     </div>
   );

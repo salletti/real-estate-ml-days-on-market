@@ -30,6 +30,20 @@ services:
     networks:
       - dom-network
 
+  # Service Node dédié au linting frontend (ne démarre pas avec docker compose up)
+  frontend-lint:
+    image: node:20-alpine
+    working_dir: /app
+    volumes:
+      - ./frontend:/app
+      - frontend_node_modules:/app/node_modules
+    profiles:
+      - lint
+
 networks:
   dom-network:
     driver: bridge
+
+volumes:
+  # Cache node_modules pour le service frontend-lint
+  frontend_node_modules:

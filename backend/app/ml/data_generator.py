@@ -36,28 +36,24 @@ def generate_dataset(n_samples: int = 5000, seed: int = 42) -> pd.DataFrame:
     # détruirait les performances (surtout la régression linéaire).
     cities = ["Paris", "Lyon", "Marseille", "Bordeaux", "Lille", "Nantes"]
     neighborhoods = {
-        "Paris":     ["Marais", "Montmartre", "Bastille", "Nation", "Oberkampf"],
-        "Lyon":      ["Presquile", "Croix-Rousse", "Part-Dieu", "Vieux-Lyon"],
+        "Paris": ["Marais", "Montmartre", "Bastille", "Nation", "Oberkampf"],
+        "Lyon": ["Presquile", "Croix-Rousse", "Part-Dieu", "Vieux-Lyon"],
         "Marseille": ["Vieux-Port", "Castellane", "Prado", "Endoume"],
-        "Bordeaux":  ["Saint-Pierre", "Chartrons", "Bastide", "Meriadeck"],
-        "Lille":     ["Vieux-Lille", "Wazemmes", "Fives", "Moulins"],
-        "Nantes":    ["Bouffay", "Hauts-Paves", "Chantenay", "Doulon"],
+        "Bordeaux": ["Saint-Pierre", "Chartrons", "Bastide", "Meriadeck"],
+        "Lille": ["Vieux-Lille", "Wazemmes", "Fives", "Moulins"],
+        "Nantes": ["Bouffay", "Hauts-Paves", "Chantenay", "Doulon"],
     }
     zipcodes = {
-        "Paris":     ["75001", "75003", "75011", "75018", "75020"],
-        "Lyon":      ["69001", "69002", "69004", "69006"],
+        "Paris": ["75001", "75003", "75011", "75018", "75020"],
+        "Lyon": ["69001", "69002", "69004", "69006"],
         "Marseille": ["13001", "13002", "13006", "13008"],
-        "Bordeaux":  ["33000", "33100", "33200", "33300"],
-        "Lille":     ["59000", "59100", "59160", "59260"],
-        "Nantes":    ["44000", "44100", "44200", "44300"],
+        "Bordeaux": ["33000", "33100", "33200", "33300"],
+        "Lille": ["59000", "59100", "59160", "59260"],
+        "Nantes": ["44000", "44100", "44200", "44300"],
     }
     city_arr = rng.choice(cities, n_samples)
-    neighborhood_arr = np.array([
-        rng.choice(neighborhoods[c]) for c in city_arr
-    ])
-    zipcode_arr = np.array([
-        rng.choice(zipcodes[c]) for c in city_arr
-    ])
+    neighborhood_arr = np.array([rng.choice(neighborhoods[c]) for c in city_arr])
+    zipcode_arr = np.array([rng.choice(zipcodes[c]) for c in city_arr])
 
     property_types = ["apartment", "house", "studio", "penthouse", "loft"]
     # Les studios et appartements sont plus courants
@@ -69,10 +65,11 @@ def generate_dataset(n_samples: int = 5000, seed: int = 42) -> pd.DataFrame:
     energy_arr = np.where(
         age < 10,
         rng.choice(["A", "B", "C"], n_samples),
-        rng.choice(energy_ratings, n_samples, p=[0.05, 0.10, 0.20, 0.25, 0.20, 0.12, 0.08]),
+        rng.choice(
+            energy_ratings, n_samples, p=[0.05, 0.10, 0.20, 0.25, 0.20, 0.12, 0.08]
+        ),
     )
 
-    conditions = ["new", "good", "fair", "poor"]
     condition_arr = np.where(
         age < 5,
         "new",
@@ -122,24 +119,26 @@ def generate_dataset(n_samples: int = 5000, seed: int = 42) -> pd.DataFrame:
     # On borne les valeurs : minimum 1 jour, maximum 365 jours
     days = np.clip(np.round(days).astype(int), 1, 365)
 
-    return pd.DataFrame({
-        "surface": np.round(surface, 1),
-        "rooms": rooms,
-        "bathrooms": bathrooms,
-        "age": age,
-        "listing_price": listing_price,
-        "market_price_m2": np.round(market_price_m2, 2),
-        "price_ratio": np.round(price_ratio, 4),
-        "zipcode": zipcode_arr,
-        "city": city_arr,
-        "neighborhood": neighborhood_arr,
-        "property_type": property_type_arr,
-        "floor": floor,
-        "energy_rating": energy_arr,
-        "condition": condition_arr,
-        "balcony": balcony,
-        "terrace": terrace,
-        "parking": parking,
-        "furnished": furnished,
-        TARGET: days,
-    })
+    return pd.DataFrame(
+        {
+            "surface": np.round(surface, 1),
+            "rooms": rooms,
+            "bathrooms": bathrooms,
+            "age": age,
+            "listing_price": listing_price,
+            "market_price_m2": np.round(market_price_m2, 2),
+            "price_ratio": np.round(price_ratio, 4),
+            "zipcode": zipcode_arr,
+            "city": city_arr,
+            "neighborhood": neighborhood_arr,
+            "property_type": property_type_arr,
+            "floor": floor,
+            "energy_rating": energy_arr,
+            "condition": condition_arr,
+            "balcony": balcony,
+            "terrace": terrace,
+            "parking": parking,
+            "furnished": furnished,
+            TARGET: days,
+        }
+    )

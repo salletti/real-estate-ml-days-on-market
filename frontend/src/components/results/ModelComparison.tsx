@@ -8,8 +8,8 @@
 //   success → 3 cartes PredictionResult côte à côte
 // =============================================================================
 
-import { PredictionResult } from "./PredictionResult";
-import type { PredictionState } from "../../types";
+import { PredictionResult } from './PredictionResult';
+import type { PredictionState } from '../../types';
 
 interface Props {
   predictionState: PredictionState;
@@ -19,10 +19,10 @@ export function ModelComparison({ predictionState }: Props) {
   const { status, data } = predictionState;
 
   // --- idle : l'utilisateur n'a pas encore soumis ---
-  if (status === "idle") return null;
+  if (status === 'idle') return null;
 
   // --- loading : spinner centré ---
-  if (status === "loading") {
+  if (status === 'loading') {
     return (
       <div className="flex justify-center items-center py-16">
         {/*
@@ -37,7 +37,7 @@ export function ModelComparison({ predictionState }: Props) {
   }
 
   // --- error : message lisible ---
-  if (status === "error") {
+  if (status === 'error') {
     return (
       <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-center">
         <p className="text-red-600 font-medium">Erreur lors de la prédiction</p>
@@ -58,12 +58,8 @@ export function ModelComparison({ predictionState }: Props) {
   // On l'utilise pour trouver la valeur minimale, puis on retrouve l'index
   // du modèle correspondant.
   // -------------------------------------------------------------------------
-  const minDays = Math.min(
-    ...data.predictions.map((p) => p.predicted_days)
-  );
-  const bestIndex = data.predictions.findIndex(
-    (p) => p.predicted_days === minDays
-  );
+  const minDays = Math.min(...data.predictions.map((p) => p.predicted_days));
+  const bestIndex = data.predictions.findIndex((p) => p.predicted_days === minDays);
 
   return (
     <div className="space-y-4">

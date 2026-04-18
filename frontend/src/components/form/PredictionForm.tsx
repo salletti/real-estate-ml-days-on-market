@@ -2,13 +2,13 @@
 // FORMULAIRE PRINCIPAL — PredictionForm
 // =============================================================================
 
-import { useEffect } from "react";
-import { useForm } from "react-hook-form";
-import { usePrediction } from "../../hooks/usePrediction";
-import { PropertyInfoSection } from "./PropertyInfoSection";
-import { LocationSection } from "./LocationSection";
-import { AmenitiesSection } from "./AmenitiesSection";
-import type { PredictionRequest, PredictionState } from "../../types";
+import { useEffect } from 'react';
+import { useForm } from 'react-hook-form';
+import { usePrediction } from '../../hooks/usePrediction';
+import { PropertyInfoSection } from './PropertyInfoSection';
+import { LocationSection } from './LocationSection';
+import { AmenitiesSection } from './AmenitiesSection';
+import type { PredictionRequest, PredictionState } from '../../types';
 
 interface Props {
   onPrediction: (state: PredictionState) => void;
@@ -41,15 +41,17 @@ export function PredictionForm({ onPrediction }: Props) {
 
       <button
         type="submit"
-        disabled={state.status === "loading"}
+        disabled={state.status === 'loading'}
         className="w-full py-3 px-6 bg-blue-600 text-white font-semibold rounded-lg
                    hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed
                    transition-colors duration-200"
       >
-        {state.status === "loading" ? "Calcul en cours..." : "Prédire le temps de vente"}
+        {state.status === 'loading'
+          ? 'Calcul en cours...'
+          : 'Prédire le temps de vente'}
       </button>
 
-      {state.status === "error" && (
+      {state.status === 'error' && (
         <p className="text-sm text-red-500 text-center">{state.error}</p>
       )}
     </form>
