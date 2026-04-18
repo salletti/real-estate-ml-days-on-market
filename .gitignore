@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+.env
+
+# Modèles ML entraînés (trop lourds pour git, regénérés via train_models)
+backend/models/*.joblib
+backend/models/*.json
+
+# Node
+frontend/node_modules/
+frontend/dist/
+
+# Divers
+.DS_Store
+*.log
+.pytest_cache/
+.coverage
+htmlcov/
+
+# IDE
+.idea/
+.vscode/
+
+# Claude Code
+.claude/

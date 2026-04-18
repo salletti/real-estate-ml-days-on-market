@@ -1,0 +1,35 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "${BACKEND_PORT:-8000}:8000"
+    env_file:
+      - .env
+    volumes:
+      # Monte le code source de la machine hôte directement dans le container.
+      # Tout changement de fichier sur l'hôte est immédiatement visible
+      # dans le container — sans rebuild.
+      # Les packages Python (installés dans /usr/local/lib) viennent de l'image
+      # et ne sont pas affectés par ce montage.
+      - ./backend:/app
+    networks:
+      - dom-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_BASE_URL: ""
+    ports:
+      - "${FRONTEND_PORT:-3000}:80"
+    depends_on:
+      - backend
+    networks:
+      - dom-network
+
+networks:
+  dom-network:
+    driver: bridge

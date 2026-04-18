@@ -1,0 +1,16 @@
+/* Directives Tailwind — génèrent les classes utilitaires au build */
+@tailwind base;
+@tailwind components;
+
+/* Classe `input` réutilisée dans tous les champs du formulaire.
+   @layer components permet de définir ses propres classes Tailwind
+   réutilisables sans sortir du système de design. */
+@layer components {
+  .input {
+    @apply w-full rounded-lg border border-gray-300 px-3 py-2 text-sm
+           focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
+           transition-colors duration-150;
+  }
+}
+
+@tailwind utilities;
