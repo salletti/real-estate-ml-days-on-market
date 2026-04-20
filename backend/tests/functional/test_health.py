@@ -14,7 +14,7 @@ def test_health_returns_200(client, mock_service):
     # On configure le mock : list_models() retourne 3 modèles fictifs
     # PHP équivalent : $mock->method('listModels')->willReturn([...])
     mock_service.list_models.return_value = [{}, {}, {}]
-    mock_service.get_active_model_name.return_value = "xgboost"
+    mock_service.get_default_model.return_value = "xgboost"
 
     response = client.get("/health")
 
@@ -24,7 +24,7 @@ def test_health_returns_200(client, mock_service):
 def test_health_response_structure(client, mock_service):
     """La réponse doit contenir status, active_model et models_loaded."""
     mock_service.list_models.return_value = [{}, {}, {}]
-    mock_service.get_active_model_name.return_value = "xgboost"
+    mock_service.get_default_model.return_value = "xgboost"
 
     data = client.get("/health").json()
 
@@ -36,7 +36,7 @@ def test_health_response_structure(client, mock_service):
 def test_health_with_no_models(client, mock_service):
     """Même sans modèles chargés, /health doit répondre 200 (l'API est vivante)."""
     mock_service.list_models.return_value = []
-    mock_service.get_active_model_name.return_value = None
+    mock_service.get_default_model.return_value = None
 
     response = client.get("/health")
 
