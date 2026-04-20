@@ -80,6 +80,77 @@ Le hook `.git/hooks/pre-commit` exécute ESLint et Prettier avant chaque `git co
 
 ---
 
+## Tests
+
+### Outils
+
+| Outil | Rôle | Config |
+|---|---|---|
+| **Vitest** | Test runner natif Vite — réutilise la config Vite sans configuration supplémentaire | `vite.config.ts` |
+| **@testing-library/react** | Monte les composants dans un DOM virtuel et permet de les interroger | — |
+| **@testing-library/jest-dom** | Matchers expressifs : `toBeInTheDocument`, `toHaveTextContent`, `toHaveClass`... | `src/test/setup.ts` |
+| **jsdom** | Simule un environnement DOM complet sans navigateur réel | — |
+
+### Lancer les tests (via Docker)
+
+Les tests s'exécutent dans le même service Docker `frontend-lint` que le linting.
+
+```bash
+# Mode run — lance tous les tests une fois et affiche le résultat (équivalent pytest)
+docker compose --profile lint run --rm --remove-orphans frontend-lint npm run test:run
+
+# Mode watch — relance automatiquement les tests à chaque modification de fichier
+docker compose --profile lint run --rm --remove-orphans frontend-lint npm run test
+```
+
+### Ce qui est testé
+
+#### `PredictionResult` — 8 tests
+
+Composant stateless qui reçoit une `PredictionResponse` et l'affiche en carte.
+
+| Test | Ce qui est vérifié |
+|---|---|
+| Affichage des jours | Le nombre prédit et le mot "jours" sont présents |
+| Formatage du nom | `random_forest` → `Random Forest` (snake_case → Title Case) |
+| Intervalle de confiance | `lower_bound` et `upper_bound` arrondis et affichés |
+| Couleur verte | `predicted_days ≤ 30` → classe `text-green-600` |
+| Couleur orange | `predicted_days ≤ 60` → classe `text-orange-500` |
+| Couleur rouge | `predicted_days > 60` → classe `text-red-500` |
+| Badge "Recommandé" | Présent quand `highlighted=true` |
+| Pas de badge | Absent par défaut (`highlighted` non passé) |
+
+#### `ModelComparison` — 6 tests
+
+Composant qui gère le rendu conditionnel selon `PredictionState.status`.
+
+| Test | Ce qui est vérifié |
+|---|---|
+| État `idle` | Le composant ne rend rien (`null`) |
+| État `loading` | Un spinner (`.animate-spin`) est présent |
+| État `error` | Le message d'erreur et son détail sont affichés |
+| État `success` | Les 3 cartes de modèles sont affichées |
+| Meilleur modèle | Le badge "Recommandé" est unique et sur la bonne carte |
+| Titre | "Résultats de prédiction" est affiché en succès |
+
+### Structure des fichiers de test
+
+```
+src/
+├── test/
+│   └── setup.ts                              # Charge @testing-library/jest-dom avant chaque suite
+└── components/
+    └── results/
+        ├── PredictionResult.tsx
+        ├── PredictionResult.test.tsx         # 8 tests unitaires
+        ├── ModelComparison.tsx
+        └── ModelComparison.test.tsx          # 6 tests unitaires
+```
+
+> Les tests sont aussi exécutés automatiquement par le hook `.git/hooks/pre-commit` avant chaque `git commit`, après ESLint et Prettier.
+
+---
+
 ## Utiliser le formulaire
 
 ### Vue d'ensemble
