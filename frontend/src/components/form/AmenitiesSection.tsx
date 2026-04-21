@@ -1,12 +1,3 @@
-// =============================================================================
-// SECTION 3 DU FORMULAIRE — Aménités
-//
-// Champs : balcony, terrace, parking, furnished
-//
-// Les checkboxes retournent un boolean (true/false) dans react-hook-form.
-// La conversion boolean → 0|1 est faite dans PredictionForm au moment du submit.
-// =============================================================================
-
 import type { UseFormRegister } from 'react-hook-form';
 import type { PredictionRequest } from '../../types';
 
@@ -38,8 +29,6 @@ export function AmenitiesSection({ register }: Props) {
         <CheckboxField label="Balcon">
           <input
             type="checkbox"
-            // On laisse react-hook-form gérer le boolean nativement.
-            // Pas de setValueAs ici — la conversion se fait dans onSubmit.
             {...register('balcony')}
             defaultChecked={true}
             className="w-4 h-4 rounded accent-blue-600"

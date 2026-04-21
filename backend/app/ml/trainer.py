@@ -206,4 +206,72 @@ def train_all(df: pd.DataFrame, model_dir: str = "./models") -> dict[str, Any]:
 
         results[name] = metrics
 
+    # ------------------------------------------------------------------
+    # 5. Modèles quantile pour XGBoost (intervalles de confiance per-property)
+    # ------------------------------------------------------------------
+    # Ces deux modèles ne prédisent pas la valeur centrale mais directement :
+    #   - xgboost_q10 : le 10e percentile (borne basse de la fourchette)
+    #   - xgboost_q90 : le 90e percentile (borne haute de la fourchette)
+    #
+    # Un bien "facile" (typique, bien pricé) → les deux modèles convergent
+    #   → fourchette étroite (ex: [24, 33]).
+    # Un bien atypique (surévalué, état très mauvais) → ils divergent
+    #   → fourchette large mais HONNÊTE (ex: [10, 70]).
+    #
+    # La "pinball loss" est la métrique de qualité pour les modèles quantile.
+    # Pour alpha=0.10 : on veut que 10% des vraies valeurs soient EN DESSOUS
+    # de la prédiction. Si c'est bien calibré → pinball loss minimisée.
+    #
+    # Ces modèles sont "internal=True" : ils ne s'affichent pas dans l'API
+    # comme des modèles à part entière — ils servent uniquement à calculer
+    # les CI du modèle xgboost principal.
+    quantile_configs = [("xgboost_q10", 0.10), ("xgboost_q90", 0.90)]
+
+    for name, alpha in quantile_configs:
+        logger.info(f"Training quantile model '{name}' (alpha={alpha})...")
+
+        pipeline = Pipeline(
+            [
+                ("preprocessor", build_preprocessor()),
+                (
+                    "model",
+                    XGBRegressor(
+                        n_estimators=300,
+                        learning_rate=0.05,
+                        max_depth=6,
+                        subsample=0.8,
+                        colsample_bytree=0.8,
+                        random_state=42,
+                        n_jobs=-1,
+                        verbosity=0,
+                        objective="reg:quantileerror",
+                        quantile_alpha=alpha,
+                    ),
+                ),
+            ]
+        )
+
+        pipeline.fit(X_train, y_train)
+        y_pred = pipeline.predict(X_test)
+
+        # Pinball loss : métrique officielle des modèles quantile.
+        # Formule : mean(max(alpha*(y-yhat), (alpha-1)*(y-yhat)))
+        errors = y_test.values - y_pred
+        pinball = float(np.mean(np.maximum(alpha * errors, (alpha - 1) * errors)))
+
+        metrics = {
+            "mae": round(float(mean_absolute_error(y_test, y_pred)), 2),
+            "pinball_loss": round(pinball, 4),
+            "quantile_alpha": alpha,
+            "internal": True,
+        }
+        logger.info(f"  Pinball loss={metrics['pinball_loss']:.4f}")
+
+        ModelRegistry.save(
+            name=name,
+            pipeline=pipeline,
+            metrics=metrics,
+            model_dir=model_dir,
+        )
+
     return results

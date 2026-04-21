@@ -147,9 +147,9 @@ class ModelRegistry:
                     "pipeline": pipeline,
                     "metadata": metadata,
                 }
-                logger.info(
-                    f"Loaded model '{name}' (MAE={metadata.get('mae', '?'):.2f})"
-                )
+                mae_val = metadata.get("mae")
+                mae_str = f"{mae_val:.2f}" if mae_val is not None else "?"
+                logger.info(f"Loaded model '{name}' (MAE={mae_str})")
 
             except Exception as e:
                 # On ne fait pas crasher tout le serveur pour un seul modèle corrompu
@@ -172,8 +172,16 @@ class ModelRegistry:
         if not registry:
             return None
 
+        public = [
+            name
+            for name in registry
+            if not registry[name]["metadata"].get("internal", False)
+        ]
+        if not public:
+            return None
+
         best = min(
-            registry.keys(),
+            public,
             key=lambda name: registry[name]["metadata"].get("mae", float("inf")),
         )
         logger.info(f"Best model by MAE: '{best}'")

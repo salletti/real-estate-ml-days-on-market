@@ -53,7 +53,7 @@ class ModelService:
         else:
             self._best_model = ModelRegistry.get_best_model(self._registry)
 
-        available = list(self._registry.keys())
+        available = list(self._public_registry().keys())
         logger.info(f"Default model: '{self._best_model}' | Available: {available}")
 
     # ------------------------------------------------------------------
@@ -82,30 +82,40 @@ class ModelService:
         if name not in self._registry:
             raise HTTPException(
                 status_code=404,
-                detail=f"Model '{name}' not found. Available: {list(self._registry.keys())}",  # noqa: E501
+                detail=f"Model '{name}' not found. Available: {list(self._public_registry().keys())}",  # noqa: E501
             )
 
         entry = self._registry[name]
+
+        # Pour XGBoost : passer les modèles quantile s'ils sont disponibles.
+        # Ils prédisent directement les bornes basse/haute de la fourchette
+        # → intervalles per-property au lieu d'une marge globale fixe.
+        q10_pipeline = None
+        q90_pipeline = None
+        if name == "xgboost":
+            if "xgboost_q10" in self._registry:
+                q10_pipeline = self._registry["xgboost_q10"]["pipeline"]
+            if "xgboost_q90" in self._registry:
+                q90_pipeline = self._registry["xgboost_q90"]["pipeline"]
+
         return predictor.predict(
             features=features,
             pipeline=entry["pipeline"],
             metadata=entry["metadata"],
+            q10_pipeline=q10_pipeline,
+            q90_pipeline=q90_pipeline,
         )
 
     def predict_all(self, features: dict[str, Any]) -> list[dict[str, Any]]:
         """
-        Prédit avec TOUS les modèles et retourne les résultats côte à côte.
-        Permet à l'utilisateur de comparer les prédictions des 3 modèles.
+        Prédit avec tous les modèles publics et retourne les résultats côte à côte.
+        Les modèles internes (quantile) sont exclus de cette liste.
         """
         self._assert_models_loaded()
 
         return [
-            predictor.predict(
-                features=features,
-                pipeline=entry["pipeline"],
-                metadata=entry["metadata"],
-            )
-            for entry in self._registry.values()
+            self.predict(features=features, model_name=name)
+            for name in self._public_registry()
         ]
 
     # ------------------------------------------------------------------
@@ -113,14 +123,22 @@ class ModelService:
     # ------------------------------------------------------------------
 
     def list_models(self) -> list[dict[str, Any]]:
-        """Retourne les métadonnées de tous les modèles disponibles."""
-        return [entry["metadata"] for entry in self._registry.values()]
+        """Retourne les métadonnées des modèles publics (sans les modèles internes)."""
+        return [entry["metadata"] for entry in self._public_registry().values()]
 
     def get_default_model(self) -> str | None:
         return self._best_model
 
     def get_available_models(self) -> list[str]:
-        return list(self._registry.keys())
+        return list(self._public_registry().keys())
+
+    def _public_registry(self) -> dict[str, dict[str, Any]]:
+        """Filtre les modèles internes (quantile) du registry."""
+        return {
+            name: entry
+            for name, entry in self._registry.items()
+            if not entry["metadata"].get("internal", False)
+        }
 
     # ------------------------------------------------------------------
     # Utilitaire interne

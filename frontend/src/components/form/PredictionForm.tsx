@@ -1,7 +1,3 @@
-// =============================================================================
-// FORMULAIRE PRINCIPAL — PredictionForm
-// =============================================================================
-
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { usePrediction } from '../../hooks/usePrediction';
@@ -15,8 +11,6 @@ interface Props {
 }
 
 export function PredictionForm({ onPrediction }: Props) {
-  // Le backend accepte des booléens natifs pour les checkboxes —
-  // PredictionRequest est maintenant directement compatible avec le formulaire.
   const {
     register,
     handleSubmit,

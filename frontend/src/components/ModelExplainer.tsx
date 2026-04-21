@@ -1,13 +1,3 @@
-// =============================================================================
-// MODEL EXPLAINER — Section pédagogique sous les résultats
-//
-// Explique les 3 algorithmes, les 3 métriques, et le choix de cette combinaison.
-// Composant purement statique : pas de props, pas d'état, pas d'appel API.
-// =============================================================================
-
-// -----------------------------------------------------------------------------
-// Données statiques — définition des 3 modèles
-// -----------------------------------------------------------------------------
 const MODELS = [
   {
     name: 'Régression Linéaire',
@@ -52,9 +42,6 @@ const MODELS = [
   },
 ];
 
-// -----------------------------------------------------------------------------
-// Données statiques — définition des 3 métriques
-// -----------------------------------------------------------------------------
 const METRICS = [
   {
     name: 'MAE',
@@ -82,13 +69,9 @@ const METRICS = [
   },
 ];
 
-// -----------------------------------------------------------------------------
-// COMPOSANT PRINCIPAL
-// -----------------------------------------------------------------------------
 export function ModelExplainer() {
   return (
     <div className="space-y-10 mt-10 border-t border-gray-200 pt-10">
-      {/* Titre de section */}
       <div className="text-center">
         <h2 className="text-xl font-bold text-gray-800">Comprendre les modèles</h2>
         <p className="text-sm text-gray-500 mt-1">
@@ -96,9 +79,6 @@ export function ModelExplainer() {
         </p>
       </div>
 
-      {/* ------------------------------------------------------------------ */}
-      {/* SECTION 1 — Les 3 algorithmes                                       */}
-      {/* ------------------------------------------------------------------ */}
       <div>
         <h3 className="text-base font-semibold text-gray-700 mb-4">
           Les 3 algorithmes
@@ -109,7 +89,6 @@ export function ModelExplainer() {
               key={model.name}
               className="bg-white border border-gray-200 rounded-xl p-5 space-y-3 shadow-sm"
             >
-              {/* En-tête */}
               <div className="flex items-start justify-between gap-2">
                 <h4 className="font-semibold text-gray-800 text-sm">{model.name}</h4>
                 <span
@@ -119,15 +98,12 @@ export function ModelExplainer() {
                 </span>
               </div>
 
-              {/* Description */}
               <p className="text-sm text-gray-600">{model.description}</p>
 
-              {/* Formule */}
               <div className="bg-gray-50 rounded-lg px-3 py-2">
                 <p className="text-xs font-mono text-gray-500">{model.formula}</p>
               </div>
 
-              {/* Forces / Faiblesses */}
               <div className="space-y-1 text-xs">
                 <p className="text-green-700">
                   <span className="font-medium">Force : </span>
@@ -139,7 +115,6 @@ export function ModelExplainer() {
                 </p>
               </div>
 
-              {/* Insight */}
               <div className="border-t border-gray-100 pt-2">
                 <p className="text-xs text-gray-400 italic">{model.insight}</p>
               </div>
@@ -148,9 +123,6 @@ export function ModelExplainer() {
         </div>
       </div>
 
-      {/* ------------------------------------------------------------------ */}
-      {/* SECTION 2 — Pourquoi ces trois ?                                    */}
-      {/* ------------------------------------------------------------------ */}
       <div className="bg-amber-50 border border-amber-200 rounded-xl p-5">
         <h3 className="text-base font-semibold text-gray-700 mb-2">
           Pourquoi ces trois modèles ensemble ?
@@ -187,9 +159,6 @@ export function ModelExplainer() {
         </p>
       </div>
 
-      {/* ------------------------------------------------------------------ */}
-      {/* SECTION 3 — Les métriques                                           */}
-      {/* ------------------------------------------------------------------ */}
       <div>
         <h3 className="text-base font-semibold text-gray-700 mb-4">{`Les métriques d'évaluation`}</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -202,18 +171,14 @@ export function ModelExplainer() {
                 <span className="text-lg font-bold text-gray-800">{metric.name}</span>
                 <span className="text-xs text-gray-400 ml-2">{metric.full}</span>
               </div>
-
-              {/* Formule */}
               <div className="bg-gray-50 rounded px-3 py-1.5">
                 <p className="text-xs font-mono text-gray-500">{metric.formula}</p>
               </div>
-
               <p className="text-sm text-gray-600">{metric.description}</p>
             </div>
           ))}
         </div>
 
-        {/* Tableau des résultats obtenus */}
         <div className="mt-4 bg-gray-900 rounded-xl p-4 overflow-x-auto">
           <p className="text-xs text-gray-400 mb-3 font-mono">
             {'// Résultats obtenus sur le test set'}

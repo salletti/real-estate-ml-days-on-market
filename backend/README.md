@@ -464,16 +464,45 @@ Les modèles sont chargés **une seule fois** au démarrage du serveur, pas à c
 
 ### L'intervalle de confiance
 
-Retourner `47 jours` seul est trompeur. L'API retourne toujours une fourchette :
+Retourner `47 jours` seul est trompeur. L'API retourne toujours une fourchette. Trois méthodes sont utilisées selon le modèle, par ordre de précision :
+
+**1. Quantile Regression (XGBoost)** — la méthode la plus fine
+
+Deux modèles XGBoost supplémentaires sont entraînés en parallèle du modèle central :
+- `xgboost_q10` : prédit directement le **10e percentile** (borne basse)
+- `xgboost_q90` : prédit directement le **90e percentile** (borne haute)
+
+Ces modèles utilisent `objective="reg:quantileerror"` — ils ne minimisent pas l'erreur quadratique comme le modèle central, mais la **pinball loss**, qui pénalise spécifiquement les erreurs dans la mauvaise direction pour chaque quantile.
 
 ```
-lower_bound = predicted_days - 1.96 × residual_std
-upper_bound = predicted_days + 1.96 × residual_std
+Bien typique (bien pricé, bon état)     → [23, 37] ← fourchette étroite
+Bien atypique (surévalué, DPE G, poor)  → [138, 162] ← fourchette honnêtement large
 ```
 
-`residual_std` est l'écart-type des erreurs calculé sur le test set pendant l'entraînement. `1.96` est le z-score correspondant à 95% sous distribution normale.
+Les bornes s'adaptent à **chaque bien** : un bien prévisible donne une fourchette serrée, un bien inhabituel donne une fourchette large. C'est fondamentalement différent d'une marge fixe.
 
-Pour Random Forest, on utilise la variance inter-arbres plutôt que le `residual_std` global — c'est une mesure d'incertitude propre à chaque bien.
+Ces modèles sont marqués `internal: true` — ils ne s'affichent pas dans `/api/v1/models` mais sont utilisés automatiquement en coulisses quand on appelle le modèle `xgboost`.
+
+**2. Variance inter-arbres (Random Forest)**
+
+Chaque arbre du RF prédit indépendamment. L'écart-type de ces 200 prédictions reflète l'incertitude pour CE bien précis :
+
+```
+std = écart_type(prédictions des 200 arbres)
+margin = 1.96 × std
+```
+
+Si les arbres convergent → fourchette étroite. S'ils divergent → fourchette large.
+
+**3. Résidu global (Linear Regression)**
+
+Méthode de référence : même marge pour tous les biens, calculée une fois sur le test set.
+
+```
+margin = 1.96 × residual_std
+```
+
+Simple et honnête pour un modèle baseline, mais sans adaptation par propriété.
 
 ---
 
@@ -723,7 +752,75 @@ age_condition = age * condition_encoded      # interaction âge × état
 
 **Règle générale :** plus on encode explicitement la connaissance métier dans les features, moins les modèles ont à la deviner — et meilleures sont les performances.
 
-### 2. Hyperparameter tuning — impact moyen
+### 2. Quantile Regression pour XGBoost — intervalles per-property ✅ implémenté
+
+Au lieu d'une marge globale fixe (`predicted ± constante`), on entraîne deux modèles XGBoost supplémentaires qui prédisent directement les bornes de la fourchette.
+
+#### Le problème de la marge globale
+
+L'approche naive utilise le `residual_std` calculé sur l'ensemble du test set :
+```
+margin = 1.96 × residual_std  # identique pour TOUS les biens
+```
+
+Résultat : un appartement typique bien pricé et un penthouse hors normes obtiennent la même fourchette — ce qui est inexact dans les deux sens (trop large pour l'un, trop étroite pour l'autre).
+
+#### La solution : entraîner pour des quantiles
+
+XGBoost supporte nativement la quantile regression via `objective="reg:quantileerror"` :
+
+```python
+# Borne basse : "quelle valeur a 10% de chance d'être dépassée par le bas ?"
+XGBRegressor(objective="reg:quantileerror", quantile_alpha=0.10)
+
+# Borne haute : "quelle valeur a 90% de chance d'être dépassée par le haut ?"
+XGBRegressor(objective="reg:quantileerror", quantile_alpha=0.90)
+```
+
+Ces modèles apprennent pendant l'entraînement **quels types de biens sont prévisibles** et lesquels ne le sont pas. À l'inférence, ils produisent des bornes adaptées à chaque bien.
+
+#### Comparaison avant / après
+
+```
+Bien typique (appartement Paris, bien pricé)
+  Avant : [3, 53]    — fourchette de 50 jours (marge fixe ±25)
+  Après : [23, 37]   — fourchette de 14 jours ✅
+
+Bien atypique (surévalué 50%, DPE G, état poor)
+  Avant : [137, 187] — fourchette de 50 jours (identique au bien typique)
+  Après : [138, 162] — fourchette de 24 jours, honnêtement asymétrique ✅
+```
+
+#### Métrique de qualité : la pinball loss
+
+La MAE n'a pas de sens pour évaluer un modèle quantile (il n'est pas censé prédire la médiane). On utilise la **pinball loss** :
+
+```
+pinball(alpha, y, ŷ) = mean( max(alpha×(y−ŷ), (alpha−1)×(y−ŷ)) )
+```
+
+Pour `alpha=0.10` : si la vraie valeur est souvent en dessous de la borne basse prédite → le modèle est mal calibré → pinball loss élevée.
+
+#### Architecture dans le code
+
+Les modèles quantile sont sauvegardés comme les autres (`xgboost_q10.joblib`) mais marqués `"internal": true` dans leur JSON. Ils n'apparaissent pas dans `/api/v1/models` ni dans `/api/v1/predict/all`, mais sont automatiquement utilisés quand on appelle le modèle `xgboost`.
+
+```
+Requête POST /api/v1/predict (model=xgboost)
+    │
+    ▼
+ModelService.predict()
+    ├── charge pipeline xgboost       ← prédiction centrale
+    ├── charge pipeline xgboost_q10   ← borne basse
+    └── charge pipeline xgboost_q90   ← borne haute
+    │
+    ▼
+predictor._compute_confidence_interval()
+    → lower = max(1, q10_pipeline.predict(X))
+    → upper = max(upper, q90_pipeline.predict(X))  # garantit lower ≤ central ≤ upper
+```
+
+### 3. Hyperparameter tuning — impact moyen
 
 Les modèles utilisent des paramètres raisonnables mais pas optimaux. `GridSearchCV` teste automatiquement toutes les combinaisons :
 
@@ -742,7 +839,7 @@ best_pipeline = search.best_estimator_
 
 Le `cv=5` est la **validation croisée à 5 folds** : au lieu d'un seul train/test split, on découpe les données en 5 parties et on évalue 5 fois. Les métriques finales sont plus fiables et moins dépendantes du hasard de la découpe.
 
-### 3. Autres modèles — impact marginal sur données tabulaires
+### 4. Autres modèles — impact marginal sur données tabulaires
 
 XGBoost est déjà excellent sur les données tabulaires. Les alternatives les plus pertinentes :
 
@@ -753,7 +850,7 @@ XGBoost est déjà excellent sur les données tabulaires. Les alternatives les p
 | **Réseau de neurones** | Généralement **pire** que XGBoost sur les données tabulaires — réservé aux images, texte, audio |
 | **Stacking** | Combiner les 3 modèles en méta-modèle → gain marginal de ~1-2 points de R² |
 
-### 4. Données réelles — impact maximal
+### 5. Données réelles — impact maximal
 
 La limite principale du projet actuel est le dataset synthétique. Avec de vraies données :
 - Les patterns sont plus complexes et non-linéaires
@@ -762,7 +859,7 @@ La limite principale du projet actuel est le dataset synthétique. Avec de vraie
 
 Sources de données immobilières gratuites : **DVF (Demandes de Valeurs Foncières)** publiées par le gouvernement français — toutes les transactions immobilières en France depuis 2014.
 
-### 5. Validation croisée temporelle
+### 6. Validation croisée temporelle
 
 Dans un vrai contexte, les données ont une dimension temporelle : les transactions de 2024 ne se comportent pas comme celles de 2020. Un split temporel (`TimeSeriesSplit`) est plus réaliste qu'un split aléatoire :
 
@@ -775,11 +872,12 @@ Dans un vrai contexte, les données ont une dimension temporelle : les transacti
 ### Gains estimés
 
 ```
-Amélioration                        Gain estimé sur R²
-────────────────────────────────────────────────────────
-Feature engineering (price_ratio)   +0.15 à +0.20
-Hyperparameter tuning XGBoost       +0.03 à +0.05
-Passer à LightGBM / CatBoost        +0.01 à +0.03
-Données réelles (DVF)               +0.10 à +0.20  (variable)
+Amélioration                        Gain estimé sur R²      Fourchette CI
+──────────────────────────────────────────────────────────────────────────
+Feature engineering (price_ratio)   +0.15 à +0.20           —
+Quantile Regression XGBoost         —                        ÷2 à ÷4 ✅
+Hyperparameter tuning XGBoost       +0.03 à +0.05           —
+Passer à LightGBM / CatBoost        +0.01 à +0.03           —
+Données réelles (DVF)               +0.10 à +0.20 (var.)    —
 Validation croisée temporelle       (mesure plus honnête, pas un gain direct)
 ```

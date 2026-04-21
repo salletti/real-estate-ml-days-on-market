@@ -36,6 +36,8 @@ def predict(
     features: dict[str, Any],
     pipeline: Pipeline,
     metadata: dict[str, Any],
+    q10_pipeline: Pipeline | None = None,
+    q90_pipeline: Pipeline | None = None,
 ) -> dict[str, Any]:
     """
     Effectue une prédiction pour un bien immobilier.
@@ -105,6 +107,8 @@ def predict(
         pipeline=pipeline,
         metadata=metadata,
         predicted_days=predicted_days,
+        q10_pipeline=q10_pipeline,
+        q90_pipeline=q90_pipeline,
     )
 
     # ------------------------------------------------------------------
@@ -128,29 +132,46 @@ def _compute_confidence_interval(
     pipeline: Pipeline,
     metadata: dict[str, Any],
     predicted_days: int,
+    q10_pipeline: Pipeline | None = None,
+    q90_pipeline: Pipeline | None = None,
 ) -> tuple[int, int]:
     """
-    Calcule l'intervalle de confiance à 95% selon le type de modèle.
+    Calcule l'intervalle de confiance à 80% selon le type de modèle.
 
-    Pour Random Forest : on exploite la variance entre les arbres individuels.
-      Chaque arbre prédit indépendamment. La dispersion de ces prédictions
-      reflète l'incertitude du modèle sur ce bien précis.
+    Stratégie par priorité :
 
-    Pour les autres modèles (XGBoost, Linear Regression) : on utilise le
-      residual_std calculé sur le test set lors de l'entraînement.
-      C'est une approximation globale (même intervalle pour tous les biens)
-      mais simple et honnête.
+    1. Modèles quantile (XGBoost Q10/Q90) — per-property, la meilleure méthode.
+       Chaque modèle a été entraîné pour prédire directement une borne.
+       Un bien typique → bornes proches → fourchette étroite.
+       Un bien atypique → bornes éloignées → fourchette large (honnête).
+
+    2. Random Forest — per-property via variance inter-arbres.
+       Chaque arbre prédit indépendamment. La dispersion reflète l'incertitude
+       sur CE bien précis.
+
+    3. Linear Regression — global via residual_std.
+       Même marge pour tous les biens (approximation raisonnable pour un
+       modèle baseline).
     """
+    # Priorité 1 : modèles quantile disponibles → bornes directement prédites
+    if q10_pipeline is not None and q90_pipeline is not None:
+        lower = max(1, int(round(float(q10_pipeline.predict(df)[0]))))
+        upper = int(round(float(q90_pipeline.predict(df)[0])))
+        # Les 3 modèles étant indépendants, garantir : lower <= predicted <= upper
+        lower = min(lower, predicted_days)
+        upper = max(upper, predicted_days)
+        return lower, upper
+
     algorithm = metadata.get("algorithm", "")
 
+    # Priorité 2 : Random Forest → variance inter-arbres (per-property)
     if algorithm == "random_forest":
         std = _rf_prediction_std(df, pipeline)
     else:
-        # residual_std est sauvegardé dans le .json lors de l'entraînement
+        # Priorité 3 : residual_std global (Linear Regression)
         std = float(metadata.get("residual_std", 15.0))
 
     # Intervalle à 95% : ± 1.96 × écart-type
-    # 1.96 est le z-score correspondant à 95% sous distribution normale
     margin = int(round(1.96 * std))
 
     lower = max(1, predicted_days - margin)

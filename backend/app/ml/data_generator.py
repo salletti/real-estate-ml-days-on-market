@@ -114,7 +114,7 @@ def generate_dataset(n_samples: int = 5000, seed: int = 42) -> pd.DataFrame:
     days += furnished * 8  # les meublés se vendent moins vite (investisseurs méfiants)
 
     # 6. Bruit gaussien (la réalité n'est jamais parfaite)
-    days += rng.normal(0, 12, n_samples)
+    days += rng.normal(0, 6, n_samples)
 
     # On borne les valeurs : minimum 1 jour, maximum 365 jours
     days = np.clip(np.round(days).astype(int), 1, 365)

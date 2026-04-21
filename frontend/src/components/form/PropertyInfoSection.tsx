@@ -1,36 +1,11 @@
-// =============================================================================
-// SECTION 1 DU FORMULAIRE — Informations sur le bien
-//
-// Champs : surface, rooms, bathrooms, age, listing_price,
-//          market_price_m2, floor, energy_rating, condition, property_type
-//
-// Ce composant ne gère PAS son propre état — il reçoit `register` et `errors`
-// du formulaire parent (PredictionForm). C'est le pattern react-hook-form :
-// un seul état centralisé en haut, les sections ne font qu'afficher des inputs.
-// =============================================================================
-
 import type { UseFormRegister, FieldErrors } from 'react-hook-form';
 import type { PredictionRequest } from '../../types';
 
-// -----------------------------------------------------------------------------
-// PROPS — ce que le composant reçoit du parent
-//
-// UseFormRegister<PredictionRequest> : le type exact de la fonction `register`
-// fournie par useForm(). Le générique <PredictionRequest> garantit que seuls
-// les vrais noms de champs (surface, rooms, etc.) sont acceptés — TypeScript
-// refusera "surfaace" par exemple.
-// -----------------------------------------------------------------------------
 interface Props {
   register: UseFormRegister<PredictionRequest>;
   errors: FieldErrors<PredictionRequest>;
 }
 
-// -----------------------------------------------------------------------------
-// COMPOSANT UTILITAIRE — champ de formulaire avec label + message d'erreur
-//
-// On extrait ce petit composant pour éviter de répéter le même markup
-// (label + input + message d'erreur) pour chaque champ.
-// -----------------------------------------------------------------------------
 function Field({
   label,
   error,
@@ -38,21 +13,17 @@ function Field({
 }: {
   label: string;
   error?: string;
-  children: React.ReactNode; // "children" = ce qu'on met entre les balises
+  children: React.ReactNode;
 }) {
   return (
     <div className="flex flex-col gap-1">
       <label className="text-sm font-medium text-gray-700">{label}</label>
       {children}
-      {/* On affiche le message d'erreur uniquement s'il existe */}
       {error && <p className="text-xs text-red-500">{error}</p>}
     </div>
   );
 }
 
-// -----------------------------------------------------------------------------
-// SECTION PRINCIPALE
-// -----------------------------------------------------------------------------
 export function PropertyInfoSection({ register, errors }: Props) {
   return (
     <div className="space-y-4">
@@ -60,19 +31,15 @@ export function PropertyInfoSection({ register, errors }: Props) {
         Informations sur le bien
       </h2>
 
-      {/* Grille 2 colonnes sur écrans moyens et plus */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* --- surface --- */}
         <Field label="Surface (m²)" error={errors.surface?.message}>
           <input
             type="number"
-            // register("surface", { validation }) connecte cet input au formulaire.
-            // required + min/max sont des règles de validation intégrées.
             {...register('surface', {
               required: 'La surface est obligatoire',
               min: { value: 9, message: 'Minimum 9 m²' },
               max: { value: 1000, message: 'Maximum 1000 m²' },
-              valueAsNumber: true, // retourne un number, pas une string
+              valueAsNumber: true,
             })}
             placeholder="65"
             defaultValue={65}
@@ -80,7 +47,6 @@ export function PropertyInfoSection({ register, errors }: Props) {
           />
         </Field>
 
-        {/* --- rooms --- */}
         <Field label="Nombre de pièces" error={errors.rooms?.message}>
           <input
             type="number"
@@ -96,7 +62,6 @@ export function PropertyInfoSection({ register, errors }: Props) {
           />
         </Field>
 
-        {/* --- bathrooms --- */}
         <Field label="Salles de bain" error={errors.bathrooms?.message}>
           <input
             type="number"
@@ -112,7 +77,6 @@ export function PropertyInfoSection({ register, errors }: Props) {
           />
         </Field>
 
-        {/* --- age --- */}
         <Field label="Âge du bien (années)" error={errors.age?.message}>
           <input
             type="number"
@@ -128,7 +92,6 @@ export function PropertyInfoSection({ register, errors }: Props) {
           />
         </Field>
 
-        {/* --- listing_price --- */}
         <Field label="Prix de vente (€)" error={errors.listing_price?.message}>
           <input
             type="number"
@@ -143,7 +106,6 @@ export function PropertyInfoSection({ register, errors }: Props) {
           />
         </Field>
 
-        {/* --- market_price_m2 --- */}
         <Field label="Prix marché au m² (€)" error={errors.market_price_m2?.message}>
           <input
             type="number"
@@ -158,7 +120,6 @@ export function PropertyInfoSection({ register, errors }: Props) {
           />
         </Field>
 
-        {/* --- floor --- */}
         <Field label="Étage (0 = RDC)" error={errors.floor?.message}>
           <input
             type="number"
@@ -174,7 +135,6 @@ export function PropertyInfoSection({ register, errors }: Props) {
           />
         </Field>
 
-        {/* --- property_type --- */}
         <Field label="Type de bien" error={errors.property_type?.message}>
           <select
             {...register('property_type', { required: 'Obligatoire' })}
@@ -189,14 +149,12 @@ export function PropertyInfoSection({ register, errors }: Props) {
           </select>
         </Field>
 
-        {/* --- energy_rating --- */}
         <Field label="Diagnostic énergétique" error={errors.energy_rating?.message}>
           <select
             {...register('energy_rating', { required: 'Obligatoire' })}
             defaultValue="C"
             className="input"
           >
-            {/* On génère les options A→G dynamiquement */}
             {['A', 'B', 'C', 'D', 'E', 'F', 'G'].map((r) => (
               <option key={r} value={r}>
                 {r}
@@ -205,7 +163,6 @@ export function PropertyInfoSection({ register, errors }: Props) {
           </select>
         </Field>
 
-        {/* --- condition --- */}
         <Field label="État général" error={errors.condition?.message}>
           <select
             {...register('condition', { required: 'Obligatoire' })}
