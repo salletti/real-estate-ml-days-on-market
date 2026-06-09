@@ -1,3 +1,11 @@
+![Python](https://img.shields.io/badge/Python-3.11-blue?logo=python&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-009688?logo=fastapi&logoColor=white)
+![XGBoost](https://img.shields.io/badge/XGBoost-ML-orange?logo=xgboost&logoColor=white)
+![scikit-learn](https://img.shields.io/badge/scikit--learn-ML-F7931E?logo=scikit-learn&logoColor=white)
+![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)
+![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)
+
+
 # Days on Market
 
 Ce projet explore si le Machine Learning peut aider un agent immobilier à estimer combien de temps un bien restera sur le marché avant de se vendre — et à quel point le prix demandé est le facteur déterminant.
