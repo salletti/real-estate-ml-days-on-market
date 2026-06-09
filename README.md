@@ -1,5 +1,7 @@
 # Days on Market
 
+Ce projet explore si le Machine Learning peut aider un agent immobilier à estimer combien de temps un bien restera sur le marché avant de se vendre — et à quel point le prix demandé est le facteur déterminant.
+
 Prédiction du temps de vente d'un bien immobilier — application full-stack avec Machine Learning.
 
 Un agent immobilier saisit les caractéristiques d'un bien et obtient une estimation en jours accompagnée d'une fourchette de confiance, calculée par trois modèles ML comparés en temps réel.
