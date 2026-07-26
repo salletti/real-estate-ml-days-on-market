@@ -14,7 +14,7 @@ Construite avec **React 18** + **TypeScript** + **Vite** + **Tailwind CSS**.
 docker compose up --build -d
 ```
 
-L'interface est disponible sur **`http://localhost:80`**.
+L'interface est disponible sur **`http://localhost:3000`**.
 
 > Le frontend communique avec le backend via nginx — aucune configuration supplémentaire.
 

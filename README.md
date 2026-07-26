@@ -1,160 +1,149 @@
 ![Python](https://img.shields.io/badge/Python-3.11-blue?logo=python&logoColor=white)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-009688?logo=fastapi&logoColor=white)
-![XGBoost](https://img.shields.io/badge/XGBoost-ML-orange?logo=xgboost&logoColor=white)
+![React](https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=black)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)
 ![scikit-learn](https://img.shields.io/badge/scikit--learn-ML-F7931E?logo=scikit-learn&logoColor=white)
-![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)
+![XGBoost](https://img.shields.io/badge/XGBoost-ML-orange)
 ![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)
-
+![License](https://img.shields.io/badge/License-MIT-green.svg)
 
 # Days on Market
 
-Ce projet explore si le Machine Learning peut aider un agent immobilier à estimer combien de temps un bien restera sur le marché avant de se vendre — et à quel point le prix demandé est le facteur déterminant.
+Days on Market est une application full-stack de Machine Learning qui estime le temps de vente d'un bien immobilier.
 
-Prédiction du temps de vente d'un bien immobilier — application full-stack avec Machine Learning.
-
-Un agent immobilier saisit les caractéristiques d'un bien et obtient une estimation en jours accompagnée d'une fourchette de confiance, calculée par trois modèles ML comparés en temps réel.
-
----
-
-## Stack technique
-
-| Couche | Technologie |
-|---|---|
-| **Backend** | FastAPI + Python 3.11 |
-| **Machine Learning** | scikit-learn, XGBoost |
-| **Frontend** | React 19, TypeScript, Vite |
-| **Formulaires** | react-hook-form |
-| **HTTP client** | Axios |
-| **Infrastructure** | Docker, Docker Compose |
-| **Qualité backend** | Ruff, mypy |
-
----
+L'utilisateur saisit les caractéristiques d'un bien, l'API FastAPI calcule une prédiction, et l'interface React compare les résultats de plusieurs modèles.
 
 ## Fonctionnalités
 
-- Formulaire avec 17 features immobilières (surface, prix, ville, DPE, état...)
-- Prédiction avec **XGBoost**, **Random Forest** et **Régression Linéaire** en parallèle
-- Intervalle de confiance à 95% pour chaque prédiction
-- Comparaison des trois modèles avec leurs métriques (MAE, RMSE, R²)
-- Explications pédagogiques intégrées sur le fonctionnement du ML
+- Formulaire immobilier avec 17 features : surface, prix, ville, DPE, état, équipements, etc.
+- Prédictions en parallèle avec XGBoost, Random Forest et Linear Regression
+- Fourchette de confiance pour chaque prédiction
+- Comparaison des modèles avec MAE, RMSE et R2
+- Environnement local avec Docker Compose
+- Documentation pédagogique dédiée au pipeline Machine Learning
 
----
+## Stack Technique
 
-## Architecture
+| Couche | Technologie |
+|---|---|
+| Backend | FastAPI, Python 3.11 |
+| Machine Learning | scikit-learn, XGBoost |
+| Frontend | React 18, TypeScript, Vite |
+| Formulaires | react-hook-form |
+| Client HTTP | Axios |
+| Infrastructure | Docker, Docker Compose |
+| Qualité | Ruff, mypy, ESLint, Prettier, Vitest, pytest |
 
-```
-days-on-market/
-├── backend/            # API FastAPI + pipeline ML
-│   ├── app/
-│   │   ├── routes/     # Endpoints HTTP
-│   │   ├── services/   # Logique applicative
-│   │   ├── ml/         # Preprocessing, entraînement, prédiction
-│   │   └── schemas/    # Modèles Pydantic
-│   ├── models/         # Fichiers .joblib générés à l'entraînement
-│   └── scripts/        # CLI d'entraînement
-├── frontend/           # Application React
-│   └── src/
-│       ├── components/ # Form, PredictionResult, ModelComparison
-│       └── pages/      # HomePage
-└── docker-compose.yml
-```
-
----
-
-## Démarrage rapide
+## Démarrage Rapide
 
 ### Prérequis
 
-- Docker et Docker Compose
+- Docker
+- Docker Compose
 
 ### Lancer l'application
 
 ```bash
-# Construire et démarrer les services
 docker compose up --build -d
-
-# Entraîner les modèles (requis au premier lancement)
 docker compose exec backend python -m scripts.train_models
-
-# Frontend : http://localhost:3000
-# Backend (Swagger) : http://localhost:8000/docs
 ```
 
-### Arrêter
+Puis ouvrir :
+
+- Frontend : `http://localhost:3000`
+- Documentation API : `http://localhost:8000/docs`
+
+### Arrêter l'application
 
 ```bash
 docker compose down
 ```
 
----
-
-## API — Endpoints principaux
+## API
 
 | Méthode | Endpoint | Description |
 |---|---|---|
-| `GET` | `/health` | Statut de l'API et modèles chargés |
-| `GET` | `/api/v1/models` | Liste des modèles et leurs métriques |
+| `GET` | `/health` | Statut de l'API et des modèles chargés |
+| `GET` | `/api/v1/models` | Modèles disponibles et métriques |
 | `POST` | `/api/v1/predict?model=xgboost` | Prédiction avec un modèle |
-| `POST` | `/api/v1/predict/all` | Prédictions des 3 modèles en parallèle |
+| `POST` | `/api/v1/predict/all` | Comparaison des prédictions des modèles publics |
 
-Exemple de réponse :
+La documentation interactive est disponible sur `http://localhost:8000/docs`.
 
-```json
-{
-  "predicted_days": 47,
-  "lower_bound": 28,
-  "upper_bound": 66,
-  "model_used": "xgboost",
-  "model_metrics": { "mae": 15.42, "rmse": 19.40, "r2": 0.89 }
-}
+## Machine Learning
+
+Les modèles sont entraînés sur un dataset synthétique de 5 000 biens immobiliers. La target est `days_on_market`.
+
+La feature dérivée la plus importante est :
+
+```text
+price_ratio = listing_price / (surface * market_price_m2)
 ```
 
-Documentation interactive : **`http://localhost:8000/docs`**
+Elle indique si un bien est sous-évalué, correctement positionné ou surévalué par rapport au marché local.
 
----
+| Modèle | Rôle |
+|---|---|
+| Linear Regression | Baseline simple |
+| Random Forest | Ensemble d'arbres robuste |
+| XGBoost | Modèle principal de gradient boosting |
 
-## Modèles ML — Performances
+Le projet est volontairement pédagogique : il montre comment assembler preprocessing, feature engineering, comparaison de modèles et intervalles de confiance dans une API utilisable.
 
-Les modèles sont entraînés sur un dataset synthétique de 5 000 biens immobiliers avec une feature dérivée clé (`price_ratio = listing_price / (surface × market_price_m2)`).
+## Structure
 
+```text
+days-on-market/
+├── backend/              # API FastAPI et pipeline ML
+├── frontend/             # Application React
+├── docs/                 # Documentation pédagogique
+├── docker-compose.yml
+├── docker-compose.prod.yml
+└── README.md
 ```
-Modèle                  MAE      RMSE      R²
-────────────────────────────────────────────────
-xgboost                ~8 jours  ~11 j    0.89
-random_forest          ~8 jours  ~11 j    0.87
-linear_regression      ~8 jours  ~11 j    0.89
-```
 
-Les trois modèles atteignent R²~0.89 grâce au feature engineering (`price_ratio`). La régression linéaire, normalement limitée, atteint la même précision que XGBoost une fois cette feature ajoutée — illustration concrète de l'importance du feature engineering vs choix du modèle.
+## Développement
 
----
-
-## Qualité de code
+Checks backend :
 
 ```bash
-# Lint
 docker compose exec backend ruff check app/
-
-# Format
-docker compose exec backend ruff format app/
-
-# Type checking
+docker compose exec backend ruff format --check app/
 docker compose exec backend mypy app/
-
-# Tests
 docker compose exec backend pytest
 ```
 
-Un hook `pre-commit` exécute automatiquement Ruff et mypy avant chaque commit.
+Checks frontend :
 
----
+```bash
+docker compose --profile lint run --rm frontend-lint npm run lint
+docker compose --profile lint run --rm frontend-lint npm run format:check
+docker compose --profile lint run --rm frontend-lint npm run test:run
+```
 
-## Documentation détaillée
+## Documentation
 
-Le README du backend contient une documentation pédagogique complète sur :
-- Le pipeline ML étape par étape (preprocessing, entraînement, évaluation)
-- Les trois modèles comparés (Linear Regression, Random Forest, XGBoost)
-- L'architecture FastAPI (couches, injection de dépendances, lifespan)
-- Les pistes d'amélioration (hyperparameter tuning, données réelles DVF...)
+- [Sommaire de la documentation](docs/README.md)
+- [Vue d'ensemble Machine Learning](docs/machine-learning.md)
+- [Dataset et features](docs/data.md)
+- [Pipeline de preprocessing](docs/preprocessing.md)
+- [Comparaison des modèles](docs/models.md)
+- [Architecture de l'API backend](docs/api-backend.md)
 
-→ [`backend/README.md`](backend/README.md)
+## Limites
+
+Ce projet utilise des données synthétiques. Il sert de démonstration technique et pédagogique, pas de système de prédiction immobilier exploitable tel quel en production.
+
+Pour un usage réel, les modèles devraient être entraînés et validés sur des données de marché réelles : transactions, historique d'annonces, signaux géographiques et tendances temporelles.
+
+## Roadmap
+
+- Remplacer ou compléter les données synthétiques par des données réelles
+- Ajouter du tuning d'hyperparamètres et de la validation croisée
+- Ajouter une validation temporelle pour mesurer le drift marché
+- Ajouter des checks CI sur les pull requests
+- Documenter le déploiement
+
+## Licence
+
+Ce projet est distribué sous licence [MIT](LICENSE).
